@@ -1,0 +1,41 @@
+{
+  "name": "pi-cowork",
+  "version": "0.1.0",
+  "description": "Desktop GUI for the pi coding agent",
+  "type": "module",
+  "scripts": {
+    "dev:frontend": "vite",
+    "build:frontend": "tsc && vite build",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check --write ."
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.4.0",
+    "@tauri-apps/plugin-notification": "^2.2.2",
+    "@tauri-apps/plugin-shell": "^2.2.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.11.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@tauri-apps/cli": "^2.4.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.2"
+  }
+}

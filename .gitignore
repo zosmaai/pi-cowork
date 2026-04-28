@@ -1,0 +1,15 @@
+/node_modules
+/dist
+/.cache
+/.tmp
+*.log
+.DS_Store
+.env
+.env.local
+/src-tauri/target
+/src-tauri/gen
+*.tsbuildinfo
+/coverage
+/playwright-report
+/test-results
+/.pi-lens
