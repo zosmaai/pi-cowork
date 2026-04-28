@@ -42,9 +42,7 @@ async fn check_pi_status() -> Result<PiStatus, String> {
     let version = if path.is_some() {
         match std::process::Command::new("pi").arg("--version").output() {
             Ok(output) if output.status.success() => {
-                let v = String::from_utf8_lossy(&output.stdout)
-                    .trim()
-                    .to_string();
+                let v = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 Some(v)
             }
             _ => None,
