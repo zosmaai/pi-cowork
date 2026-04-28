@@ -18,7 +18,7 @@ jobs:
           - platform: macos-latest
             args: "--target aarch64-apple-darwin"
             name: macOS-arm64
-          - platform: macos-13
+          - platform: macos-latest
             args: "--target x86_64-apple-darwin"
             name: macOS-x64
           - platform: ubuntu-22.04
@@ -40,6 +40,10 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Add x86_64 target for cross-compilation
+        if: matrix.args == '--target x86_64-apple-darwin'
+        run: rustup target add x86_64-apple-darwin
 
       - name: Install dependencies (Ubuntu)
         if: matrix.platform == 'ubuntu-22.04'
