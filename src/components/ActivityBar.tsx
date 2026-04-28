@@ -31,7 +31,11 @@ export function ActivityBar({ activeView, onViewChange }: ActivityBarProps) {
 					<Tooltip key={item.id} content={item.label} side="right">
 						<button
 							type="button"
-							onClick={() => onViewChange(item.id)}
+							aria-label={item.label}
+							data-active={activeView === item.id}
+							onClick={() => {
+								if (activeView !== item.id) onViewChange(item.id);
+							}}
 							className={cn(
 								"w-9 h-9 rounded-md flex items-center justify-center transition-colors",
 								activeView === item.id
@@ -51,7 +55,11 @@ export function ActivityBar({ activeView, onViewChange }: ActivityBarProps) {
 					<Tooltip key={item.id} content={item.label} side="right">
 						<button
 							type="button"
-							onClick={() => onViewChange(item.id)}
+							aria-label={item.label}
+							data-active={activeView === item.id}
+							onClick={() => {
+								if (activeView !== item.id) onViewChange(item.id);
+							}}
 							className={cn(
 								"w-9 h-9 rounded-md flex items-center justify-center transition-colors",
 								activeView === item.id

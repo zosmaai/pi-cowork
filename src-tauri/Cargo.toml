@@ -8,8 +8,6 @@ repository = ""
 edition = "2021"
 rust-version = "1.77.2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
 name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -25,3 +23,4 @@ tauri = { version = "2.10.3", features = [] }
 tauri-plugin-log = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-notification = "2"
+tokio = { version = "1", features = ["process", "io-util", "sync", "rt-multi-thread"] }

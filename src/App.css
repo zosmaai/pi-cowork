@@ -38,43 +38,117 @@
 	--font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
+/* ── Light mode (Claude warm cream) ── */
 :root {
-	--background: 220 13% 5%;
-	--foreground: 210 20% 96%;
-	--card: 220 13% 7%;
-	--card-foreground: 210 20% 96%;
-	--popover: 220 13% 7%;
-	--popover-foreground: 210 20% 96%;
-	--primary: 217 91% 60%;
+	--background: 40 20% 97%;
+	--foreground: 30 6% 10%;
+	--card: 0 0% 100%;
+	--card-foreground: 30 6% 10%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 30 6% 10%;
+	--primary: 15 60% 55%;
 	--primary-foreground: 0 0% 100%;
-	--secondary: 220 13% 12%;
-	--secondary-foreground: 210 20% 96%;
-	--muted: 220 13% 14%;
-	--muted-foreground: 215 14% 55%;
-	--accent: 220 13% 14%;
-	--accent-foreground: 210 20% 96%;
-	--destructive: 0 63% 50%;
+	--secondary: 40 14% 93%;
+	--secondary-foreground: 30 6% 10%;
+	--muted: 40 14% 93%;
+	--muted-foreground: 30 4% 45%;
+	--accent: 40 14% 93%;
+	--accent-foreground: 30 6% 10%;
+	--destructive: 0 72% 51%;
 	--destructive-foreground: 0 0% 100%;
-	--border: 220 13% 16%;
-	--input: 220 13% 16%;
-	--ring: 217 91% 60%;
-	--radius: 0.625rem;
+	--border: 40 10% 88%;
+	--input: 40 10% 88%;
+	--ring: 15 60% 55%;
+	--radius: 0.75rem;
 
-	--sidebar-background: 220 13% 6%;
-	--sidebar-foreground: 210 20% 96%;
-	--sidebar-primary: 217 91% 60%;
+	--sidebar-background: 40 16% 95%;
+	--sidebar-foreground: 30 6% 10%;
+	--sidebar-primary: 15 60% 55%;
 	--sidebar-primary-foreground: 0 0% 100%;
-	--sidebar-accent: 220 13% 12%;
-	--sidebar-accent-foreground: 210 20% 96%;
-	--sidebar-border: 220 13% 14%;
-	--sidebar-ring: 217 91% 60%;
+	--sidebar-accent: 40 14% 90%;
+	--sidebar-accent-foreground: 30 6% 10%;
+	--sidebar-border: 40 10% 88%;
+	--sidebar-ring: 15 60% 55%;
 }
 
+/* ── Dark mode (warm dark) ── */
+html.dark {
+	--background: 30 6% 10%;
+	--foreground: 40 20% 97%;
+	--card: 30 5% 14%;
+	--card-foreground: 40 20% 97%;
+	--popover: 30 5% 14%;
+	--popover-foreground: 40 20% 97%;
+	--primary: 15 60% 55%;
+	--primary-foreground: 0 0% 100%;
+	--secondary: 30 4% 18%;
+	--secondary-foreground: 40 20% 97%;
+	--muted: 30 4% 18%;
+	--muted-foreground: 30 4% 55%;
+	--accent: 30 4% 18%;
+	--accent-foreground: 40 20% 97%;
+	--destructive: 0 62% 50%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 30 4% 22%;
+	--input: 30 4% 22%;
+	--ring: 15 60% 55%;
+
+	--sidebar-background: 30 5% 12%;
+	--sidebar-foreground: 40 20% 97%;
+	--sidebar-primary: 15 60% 55%;
+	--sidebar-primary-foreground: 0 0% 100%;
+	--sidebar-accent: 30 4% 18%;
+	--sidebar-accent-foreground: 40 20% 97%;
+	--sidebar-border: 30 4% 22%;
+	--sidebar-ring: 15 60% 55%;
+}
+
+/* ── Auto dark mode via OS preference ── */
+@media (prefers-color-scheme: dark) {
+	html:not(.light) {
+		--background: 30 6% 10%;
+		--foreground: 40 20% 97%;
+		--card: 30 5% 14%;
+		--card-foreground: 40 20% 97%;
+		--popover: 30 5% 14%;
+		--popover-foreground: 40 20% 97%;
+		--primary: 15 60% 55%;
+		--primary-foreground: 0 0% 100%;
+		--secondary: 30 4% 18%;
+		--secondary-foreground: 40 20% 97%;
+		--muted: 30 4% 18%;
+		--muted-foreground: 30 4% 55%;
+		--accent: 30 4% 18%;
+		--accent-foreground: 40 20% 97%;
+		--destructive: 0 62% 50%;
+		--destructive-foreground: 0 0% 100%;
+		--border: 30 4% 22%;
+		--input: 30 4% 22%;
+		--ring: 15 60% 55%;
+
+		--sidebar-background: 30 5% 12%;
+		--sidebar-foreground: 40 20% 97%;
+		--sidebar-primary: 15 60% 55%;
+		--sidebar-primary-foreground: 0 0% 100%;
+		--sidebar-accent: 30 4% 18%;
+		--sidebar-accent-foreground: 40 20% 97%;
+		--sidebar-border: 30 4% 22%;
+		--sidebar-ring: 15 60% 55%;
+	}
+}
+
+/* ── Root layout ── */
 html,
-body,
+body {
+	height: 100%;
+	min-height: 100dvh;
+}
+
 #root {
 	height: 100%;
-	width: 100%;
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: row;
 }
 
 body {
@@ -85,12 +159,13 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 	font-size: 13px;
 	line-height: 1.5;
+	overflow: hidden;
 }
 
-/* Scrollbar styling for desktop feel */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar {
-	width: 10px;
-	height: 10px;
+	width: 8px;
+	height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -98,21 +173,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: hsl(var(--muted-foreground) / 0.25);
-	border-radius: 5px;
-	border: 2px solid transparent;
-	background-clip: padding-box;
+	background: hsl(var(--muted-foreground) / 0.2);
+	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: hsl(var(--muted-foreground) / 0.4);
+	background: hsl(var(--muted-foreground) / 0.35);
 }
 
 ::-webkit-scrollbar-corner {
 	background: transparent;
 }
 
-/* Code block styling */
+/* ── Code blocks ── */
 .prose pre {
 	background: hsl(var(--muted)) !important;
 	border: 1px solid hsl(var(--border));
@@ -135,7 +208,23 @@ body {
 	border-radius: 0;
 }
 
-/* Selection */
+/* ── Selection ── */
 ::selection {
-	background: hsl(var(--primary) / 0.3);
+	background: hsl(var(--primary) / 0.25);
+}
+
+/* ── Animations ── */
+@keyframes fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in {
+	animation: fade-in 0.2s ease-out;
 }

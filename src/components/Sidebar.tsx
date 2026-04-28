@@ -98,6 +98,7 @@ export function Sidebar({
 					variant="ghost"
 					size="icon-sm"
 					onClick={onNewSession}
+					aria-label="New session"
 					className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
 				>
 					<Plus className="w-4 h-4" />
@@ -155,6 +156,7 @@ export function Sidebar({
 								</div>
 								<button
 									type="button"
+									aria-label={`Delete session ${session.title}`}
 									onClick={(e) => {
 										e.stopPropagation();
 										onDeleteSession(session.id);

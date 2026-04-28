@@ -10,9 +10,7 @@ describe("Tooltip", () => {
 				<button type="button">Hover me</button>
 			</Tooltip>,
 		);
-		expect(
-			screen.getByRole("button", { name: "Hover me" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Hover me" })).toBeInTheDocument();
 	});
 
 	it("shows tooltip content on hover", async () => {

@@ -13,3 +13,4 @@
 /playwright-report
 /test-results
 /.pi-lens
+src-tauri/.pi/
