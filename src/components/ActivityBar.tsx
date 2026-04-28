@@ -20,7 +20,7 @@ export function ActivityBar({ activeView, onViewChange }: ActivityBarProps) {
 		<div className="w-12 flex flex-col items-center py-2 bg-sidebar border-r border-sidebar-border select-none">
 			{/* App icon */}
 			<div className="mb-4 w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-				π
+				Pi
 			</div>
 
 			<Separator />

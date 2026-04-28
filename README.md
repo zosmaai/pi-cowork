@@ -1,4 +1,4 @@
-# π Cowork
+# Pi Cowork
 
 [![CI](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml)
 [![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
@@ -6,7 +6,7 @@
 
 > A desktop GUI for the [pi coding agent](https://github.com/badlogic/pi-mono) — streaming, thinking, tool calls, and steering, all in a beautiful native app.
 
-![pi-cowork-screenshot](https://via.placeholder.com/800x500/1c1b1a/d97757?text=pi+cowork+screenshot)
+![pi-cowork-screenshot](./assets/screenshot.png)
 
 ## Features
 
@@ -102,6 +102,7 @@ pi-cowork consumes pi's JSON event stream (`--mode json --print`) and maps it to
 
 ```
 pi-cowork/
+├── assets/                       # Screenshots, icons, etc.
 ├── src/                          # React frontend
 │   ├── components/               # UI components
 │   │   ├── ChatMessage.tsx       # Message with thinking + tool calls
