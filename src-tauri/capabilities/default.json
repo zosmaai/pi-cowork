@@ -9,6 +9,13 @@
     "core:default",
     "shell:allow-open",
     "notification:default",
+    "fs:default",
+    { "identifier": "fs:allow-read-text-file", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
+    { "identifier": "fs:allow-write-text-file", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
+    { "identifier": "fs:allow-read-dir", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
+    { "identifier": "fs:allow-mkdir", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
+    { "identifier": "fs:allow-remove", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
+    { "identifier": "fs:allow-exists", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
     {
       "identifier": "shell:allow-execute",
       "allow": [
