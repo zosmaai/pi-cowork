@@ -1,12 +1,6 @@
-import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
-import {
-	MessageSquare,
-	FolderOpen,
-	Settings,
-	Sparkles,
-	Command,
-} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Command, FolderOpen, MessageSquare, Settings, Sparkles } from "lucide-react";
 
 interface ActivityBarProps {
 	activeView: string;

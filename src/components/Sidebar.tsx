@@ -1,14 +1,8 @@
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import {
-	MessageSquare,
-	Plus,
-	MoreHorizontal,
-	Clock,
-	Trash2,
-} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Clock, MessageSquare, Plus, Trash2 } from "lucide-react";
 
 interface Session {
 	id: string;
@@ -44,9 +38,7 @@ export function Sidebar({
 					</span>
 				</div>
 				<ScrollArea className="flex-1 px-2">
-					<div className="py-1 text-sm text-muted-foreground px-2">
-						No folder open
-					</div>
+					<div className="py-1 text-sm text-muted-foreground px-2">No folder open</div>
 				</ScrollArea>
 			</div>
 		);
@@ -63,9 +55,7 @@ export function Sidebar({
 				<ScrollArea className="flex-1 px-3 py-2">
 					<div className="space-y-4">
 						<div>
-							<label className="text-xs text-muted-foreground mb-1.5 block">
-								Theme
-							</label>
+							<span className="text-xs text-muted-foreground mb-1.5 block">Theme</span>
 							<div className="flex gap-2">
 								<Button variant="secondary" size="sm" className="w-full">
 									Dark
@@ -73,9 +63,7 @@ export function Sidebar({
 							</div>
 						</div>
 						<div>
-							<label className="text-xs text-muted-foreground mb-1.5 block">
-								Model Provider
-							</label>
+							<span className="text-xs text-muted-foreground mb-1.5 block">Model Provider</span>
 							<div className="text-sm text-foreground">GitHub Copilot</div>
 						</div>
 					</div>
@@ -93,9 +81,7 @@ export function Sidebar({
 					</span>
 				</div>
 				<ScrollArea className="flex-1 px-2">
-					<div className="py-1 text-sm text-muted-foreground px-2">
-						Coming soon
-					</div>
+					<div className="py-1 text-sm text-muted-foreground px-2">Coming soon</div>
 				</ScrollArea>
 			</div>
 		);
@@ -124,15 +110,8 @@ export function Sidebar({
 							<div className="w-10 h-10 rounded-full bg-sidebar-accent mx-auto mb-2 flex items-center justify-center">
 								<MessageSquare className="w-5 h-5 text-sidebar-foreground/50" />
 							</div>
-							<p className="text-xs text-sidebar-foreground/50">
-								No sessions yet
-							</p>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={onNewSession}
-								className="mt-2 text-xs"
-							>
+							<p className="text-xs text-sidebar-foreground/50">No sessions yet</p>
+							<Button variant="ghost" size="sm" onClick={onNewSession} className="mt-2 text-xs">
 								Start a session
 							</Button>
 						</div>
@@ -153,9 +132,7 @@ export function Sidebar({
 									<MessageSquare className="w-4 h-4 mt-0.5 shrink-0 opacity-60" />
 									<div className="flex-1 min-w-0">
 										<div className="flex items-center gap-1.5">
-											<span className="text-sm font-medium truncate">
-												{session.title}
-											</span>
+											<span className="text-sm font-medium truncate">{session.title}</span>
 											{activeSessionId === session.id && (
 												<Badge
 													variant="outline"

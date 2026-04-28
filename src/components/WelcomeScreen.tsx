@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import type { PiStatus } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
+import { useState } from "react";
 
 interface WelcomeScreenProps {
 	status: PiStatus;
@@ -36,12 +36,8 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 					<span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
 					<span>pi is installed</span>
 				</div>
-				{status.version && (
-					<p className="text-surface-400 text-sm">{status.version}</p>
-				)}
-				{status.path && (
-					<p className="text-surface-500 text-xs font-mono">{status.path}</p>
-				)}
+				{status.version && <p className="text-surface-400 text-sm">{status.version}</p>}
+				{status.path && <p className="text-surface-500 text-xs font-mono">{status.path}</p>}
 				<p className="text-surface-400 max-w-md text-center">
 					Ready to code. Start a new session or open an existing workspace.
 				</p>
@@ -67,8 +63,8 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 				<span>pi is not installed</span>
 			</div>
 			<p className="text-surface-400 max-w-md text-center">
-				Pi Cowork requires the pi coding agent to be installed globally. Click
-				below to install it via npm.
+				Pi Cowork requires the pi coding agent to be installed globally. Click below to install it
+				via npm.
 			</p>
 			<button
 				type="button"

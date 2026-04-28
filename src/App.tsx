@@ -1,10 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { usePiStatus } from "@/hooks/usePiStatus";
-import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { ChatMessageItem } from "@/components/ChatMessage";
 import { MessageInput } from "@/components/MessageInput";
+import { WelcomeScreen } from "@/components/WelcomeScreen";
+import { usePiStatus } from "@/hooks/usePiStatus";
 import type { ChatMessage } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function App() {
 	const { status, loading: statusLoading, refetch } = usePiStatus();
@@ -16,9 +16,10 @@ function App() {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: scrollToBottom is stable useCallback
 	useEffect(() => {
 		scrollToBottom();
-	}, [messages, scrollToBottom]);
+	}, [messages]);
 
 	async function handleSend(text: string) {
 		const userMsg: ChatMessage = {
@@ -71,7 +72,7 @@ function App() {
 
 	// Show welcome screen if pi is not installed
 	if (!status?.installed) {
-		return <WelcomeScreen status={status!} onRefetch={refetch} />;
+		return status ? <WelcomeScreen status={status} onRefetch={refetch} /> : null;
 	}
 
 	return (
@@ -86,9 +87,7 @@ function App() {
 						<h1 className="text-sm font-semibold text-surface-100">Pi Cowork</h1>
 						<div className="flex items-center gap-1.5">
 							<span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-							<span className="text-xs text-surface-500">
-								{status.version || "pi ready"}
-							</span>
+							<span className="text-xs text-surface-500">{status.version || "pi ready"}</span>
 						</div>
 					</div>
 				</div>
@@ -115,12 +114,10 @@ function App() {
 				{messages.length === 0 ? (
 					<div className="flex flex-col items-center justify-center h-full gap-4 text-surface-500">
 						<div className="text-5xl">🥧</div>
-						<p className="text-lg font-medium text-surface-400">
-							Welcome to Pi Cowork
-						</p>
+						<p className="text-lg font-medium text-surface-400">Welcome to Pi Cowork</p>
 						<p className="text-sm max-w-sm text-center">
-							Start typing to send commands to pi. This runs pi in
-							one-shot mode — full session support coming soon.
+							Start typing to send commands to pi. This runs pi in one-shot mode — full session
+							support coming soon.
 						</p>
 					</div>
 				) : (
@@ -134,9 +131,18 @@ function App() {
 									π
 								</div>
 								<div className="flex items-center gap-1">
-									<div className="w-2 h-2 rounded-full bg-surface-500 animate-bounce" style={{ animationDelay: "0ms" }} />
-									<div className="w-2 h-2 rounded-full bg-surface-500 animate-bounce" style={{ animationDelay: "150ms" }} />
-									<div className="w-2 h-2 rounded-full bg-surface-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+									<div
+										className="w-2 h-2 rounded-full bg-surface-500 animate-bounce"
+										style={{ animationDelay: "0ms" }}
+									/>
+									<div
+										className="w-2 h-2 rounded-full bg-surface-500 animate-bounce"
+										style={{ animationDelay: "150ms" }}
+									/>
+									<div
+										className="w-2 h-2 rounded-full bg-surface-500 animate-bounce"
+										style={{ animationDelay: "300ms" }}
+									/>
 								</div>
 							</div>
 						)}

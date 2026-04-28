@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import type { PiStatus } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
+import { useCallback, useEffect, useState } from "react";
 
 export function usePiStatus() {
 	const [status, setStatus] = useState<PiStatus | null>(null);

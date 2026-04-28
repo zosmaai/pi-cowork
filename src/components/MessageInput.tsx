@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface MessageInputProps {
 	onSend: (message: string) => void;
@@ -9,6 +9,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
 	const [text, setText] = useState("");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: textareaRef is stable
 	useEffect(() => {
 		const textarea = textareaRef.current;
 		if (!textarea) return;
@@ -66,6 +67,8 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
 					strokeWidth="2"
 					strokeLinecap="round"
 					strokeLinejoin="round"
+					role="img"
+					aria-label="Send message"
 				>
 					<path d="m22 2-7 20-4-9-9-4Z" />
 					<path d="M22 2 11 13" />
