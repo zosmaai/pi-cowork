@@ -2,9 +2,9 @@ import type { ChatMessage, ToolCallInfo } from "@/types";
 import type {
 	PiEvent,
 	PiMessageUpdateEvent,
-	PiToolExecutionUpdateEvent,
-	PiToolExecutionEndEvent,
 	PiToolCall,
+	PiToolExecutionEndEvent,
+	PiToolExecutionUpdateEvent,
 } from "@/types/pi-events";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { useCallback, useReducer, useRef } from "react";
@@ -316,8 +316,7 @@ export function usePiStream() {
 								// Assistant message done, but stream may continue with tool results
 								break;
 							case "error": {
-								const reason =
-									ame.reason === "aborted" ? "Stream aborted" : "Stream error";
+								const reason = ame.reason === "aborted" ? "Stream aborted" : "Stream error";
 								dispatch({ type: "STREAM_ERROR", error: reason });
 								break;
 							}

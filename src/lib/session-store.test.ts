@@ -1,5 +1,13 @@
+import type { ChatMessage } from "@/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deleteSession, listSessions, readSession, writeSession } from "./session-store";
+import {
+	chatMessagesToEvents,
+	deleteSession,
+	listSessions,
+	piEventsToChatMessages,
+	readSession,
+	writeSession,
+} from "./session-store";
 
 vi.mock("@tauri-apps/api/path", () => ({
 	homeDir: vi.fn().mockResolvedValue("/mock/home"),
@@ -45,7 +53,14 @@ describe("session-store", () => {
 
 		it("extracts metadata from session files", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "2026-04-29T00-00-00Z_abc123.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{
+					name: "2026-04-29T00-00-00Z_abc123.jsonl",
+					isFile: true,
+					isDirectory: false,
+					isSymlink: false,
+				},
+			]);
 			mockedReadTextFile.mockResolvedValue(
 				[
 					JSON.stringify({
@@ -75,8 +90,18 @@ describe("session-store", () => {
 		it("sorts sessions newest first", async () => {
 			mockedExists.mockResolvedValue(true);
 			mockedReadDir.mockResolvedValue([
-				{ name: "2026-04-28T00-00-00Z_old.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry,
-				{ name: "2026-04-29T00-00-00Z_new.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry,
+				{
+					name: "2026-04-28T00-00-00Z_old.jsonl",
+					isFile: true,
+					isDirectory: false,
+					isSymlink: false,
+				},
+				{
+					name: "2026-04-29T00-00-00Z_new.jsonl",
+					isFile: true,
+					isDirectory: false,
+					isSymlink: false,
+				},
 			]);
 			mockedReadTextFile.mockImplementation(async (path) => {
 				const str_path = String(path);
@@ -106,7 +131,9 @@ describe("session-store", () => {
 
 		it("truncates long titles", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "test_long.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{ name: "test_long.jsonl", isFile: true, isDirectory: false, isSymlink: false },
+			]);
 			const longText = "a".repeat(100);
 			mockedReadTextFile.mockResolvedValue(
 				[
@@ -132,7 +159,14 @@ describe("session-store", () => {
 
 		it("handles untitled sessions gracefully", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "empty_session.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{
+					name: "empty_session.jsonl",
+					isFile: true,
+					isDirectory: false,
+					isSymlink: false,
+				},
+			]);
 			mockedReadTextFile.mockResolvedValue(
 				[
 					JSON.stringify({
@@ -181,14 +215,23 @@ describe("session-store", () => {
 
 		it("returns null when session file not found", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "other.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{ name: "other.jsonl", isFile: true, isDirectory: false, isSymlink: false },
+			]);
 			const result = await readSession("abc");
 			expect(result).toBeNull();
 		});
 
 		it("reads and parses session file", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "session_abc123.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{
+					name: "session_abc123.jsonl",
+					isFile: true,
+					isDirectory: false,
+					isSymlink: false,
+				},
+			]);
 			mockedReadTextFile.mockResolvedValue(
 				[
 					JSON.stringify({
@@ -217,7 +260,9 @@ describe("session-store", () => {
 	describe("deleteSession", () => {
 		it("removes the session file", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "delete_me.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{ name: "delete_me.jsonl", isFile: true, isDirectory: false, isSymlink: false },
+			]);
 			mockedRemove.mockResolvedValue(undefined);
 
 			await deleteSession("delete_me");
@@ -226,10 +271,247 @@ describe("session-store", () => {
 
 		it("does nothing when session not found", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([{ name: "other.jsonl", isFile: true, isDirectory: false, isSymlink: false } as import("@tauri-apps/plugin-fs").DirEntry]);
+			mockedReadDir.mockResolvedValue([
+				{ name: "other.jsonl", isFile: true, isDirectory: false, isSymlink: false },
+			]);
 
 			await deleteSession("not_found");
 			expect(mockedRemove).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("piEventsToChatMessages", () => {
+		it("converts user and assistant text messages", () => {
+			const events = [
+				{ type: "session", id: "s1", timestamp: "2026-04-29T00:00:00Z", version: 3, cwd: "/home" },
+				{
+					type: "message_start",
+					message: { role: "user", content: [{ type: "text", text: "Hello pi" }], timestamp: 1000 },
+				},
+				{
+					type: "message_end",
+					message: { role: "user", content: [{ type: "text", text: "Hello pi" }], timestamp: 1000 },
+				},
+				{
+					type: "message_start",
+					message: {
+						role: "assistant",
+						content: [{ type: "text", text: "Hi there!" }],
+						model: "gpt-4",
+						provider: "openai",
+						timestamp: 2000,
+					},
+				},
+				{
+					type: "message_end",
+					message: {
+						role: "assistant",
+						content: [{ type: "text", text: "Hi there!" }],
+						model: "gpt-4",
+						provider: "openai",
+						timestamp: 2000,
+					},
+				},
+				{ type: "agent_end", messages: [] },
+			];
+			const messages = piEventsToChatMessages(events as Record<string, unknown>[]);
+			expect(messages).toHaveLength(2);
+			expect(messages[0].role).toBe("user");
+			expect(messages[0].content).toBe("Hello pi");
+			expect(messages[1].role).toBe("assistant");
+			expect(messages[1].content).toBe("Hi there!");
+			expect(messages[1].model).toBe("gpt-4");
+		});
+
+		it("extracts thinking blocks", () => {
+			const events = [
+				{
+					type: "message_start",
+					message: {
+						role: "assistant",
+						content: [
+							{ type: "thinking", thinking: "Let me think..." },
+							{ type: "text", text: "Answer" },
+						],
+					},
+				},
+				{
+					type: "message_end",
+					message: {
+						role: "assistant",
+						content: [
+							{ type: "thinking", thinking: "Let me think..." },
+							{ type: "text", text: "Answer" },
+						],
+					},
+				},
+			];
+			const messages = piEventsToChatMessages(events as Record<string, unknown>[]);
+			expect(messages).toHaveLength(1);
+			expect(messages[0].thinking).toBe("Let me think...");
+			expect(messages[0].content).toBe("Answer");
+		});
+
+		it("extracts tool calls in pi format", () => {
+			const events = [
+				{
+					type: "message_start",
+					message: {
+						role: "assistant",
+						content: [
+							{ type: "toolCall", id: "call_1", name: "bash", arguments: { command: "ls" } },
+						],
+					},
+				},
+				{
+					type: "message_end",
+					message: {
+						role: "assistant",
+						content: [
+							{ type: "toolCall", id: "call_1", name: "bash", arguments: { command: "ls" } },
+						],
+					},
+				},
+				{
+					type: "tool_execution_end",
+					toolCallId: "call_1",
+					toolName: "bash",
+					result: { content: [{ type: "text", text: "file.txt" }] },
+					isError: false,
+				},
+			];
+			const messages = piEventsToChatMessages(events as Record<string, unknown>[]);
+			expect(messages).toHaveLength(1);
+			expect(messages[0].toolCalls).toHaveLength(1);
+			expect(messages[0].toolCalls?.[0].name).toBe("bash");
+			expect(messages[0].toolCalls?.[0].result).toBe("file.txt");
+		});
+
+		it("skips custom role messages", () => {
+			const events = [
+				{
+					type: "message_start",
+					message: { role: "custom", customType: "memex-recall-reminder", content: "..." },
+				},
+				{
+					type: "message_start",
+					message: { role: "user", content: [{ type: "text", text: "hi" }] },
+				},
+				{ type: "message_end", message: { role: "user", content: [{ type: "text", text: "hi" }] } },
+			];
+			const messages = piEventsToChatMessages(events as Record<string, unknown>[]);
+			expect(messages).toHaveLength(1);
+			expect(messages[0].role).toBe("user");
+		});
+
+		it("converts multiple turn conversations", () => {
+			const events = [
+				{
+					type: "message_start",
+					message: { role: "user", content: [{ type: "text", text: "msg1" }] },
+				},
+				{
+					type: "message_end",
+					message: { role: "user", content: [{ type: "text", text: "msg1" }] },
+				},
+				{
+					type: "message_start",
+					message: { role: "assistant", content: [{ type: "text", text: "reply1" }] },
+				},
+				{
+					type: "message_end",
+					message: { role: "assistant", content: [{ type: "text", text: "reply1" }] },
+				},
+				{
+					type: "message_start",
+					message: { role: "user", content: [{ type: "text", text: "msg2" }] },
+				},
+				{
+					type: "message_end",
+					message: { role: "user", content: [{ type: "text", text: "msg2" }] },
+				},
+				{
+					type: "message_start",
+					message: { role: "assistant", content: [{ type: "text", text: "reply2" }] },
+				},
+				{
+					type: "message_end",
+					message: { role: "assistant", content: [{ type: "text", text: "reply2" }] },
+				},
+			];
+			const messages = piEventsToChatMessages(events as Record<string, unknown>[]);
+			expect(messages).toHaveLength(4);
+			expect(messages[0].content).toBe("msg1");
+			expect(messages[1].content).toBe("reply1");
+			expect(messages[2].content).toBe("msg2");
+			expect(messages[3].content).toBe("reply2");
+		});
+	});
+
+	describe("chatMessagesToEvents", () => {
+		it("converts simple user/assistant messages to event format", () => {
+			const messages: ChatMessage[] = [
+				{ id: "1", role: "user", content: "Hello", timestamp: 1000 },
+				{ id: "2", role: "assistant", content: "Hi there!", timestamp: 2000 },
+			];
+			const events = chatMessagesToEvents("test-session", messages);
+			expect(events[0]).toEqual({
+				type: "session",
+				version: 3,
+				id: "test-session",
+				timestamp: expect.any(String),
+				cwd: "",
+			});
+			// Should have session + message_start/message_end pairs + agent_end
+			expect(events.length).toBeGreaterThanOrEqual(5);
+		});
+
+		it("converts thinking and tool calls", () => {
+			const messages: ChatMessage[] = [
+				{
+					id: "1",
+					role: "assistant",
+					content: "Result",
+					timestamp: 1000,
+					thinking: "Let me think",
+					toolCalls: [
+						{
+							id: "tc1",
+							name: "bash",
+							args: { command: "ls" },
+							status: "completed",
+							result: "output",
+						},
+					],
+				},
+			];
+			const events = chatMessagesToEvents("test", messages);
+			// Should include thinking, text, toolCall in content, and tool_execution_end
+			const messageStart = events.find((e) => e.type === "message_start");
+			expect(messageStart).toBeDefined();
+			const toolExecEnd = events.find((e) => e.type === "tool_execution_end");
+			expect(toolExecEnd).toBeDefined();
+		});
+
+		it("round-trips through piEventsToChatMessages", () => {
+			const messages: ChatMessage[] = [
+				{ id: "1", role: "user", content: "Hello", timestamp: 1000 },
+				{
+					id: "2",
+					role: "assistant",
+					content: "Hi!",
+					timestamp: 2000,
+					model: "gpt-4",
+					provider: "openai",
+				},
+			];
+			const events = chatMessagesToEvents("round-trip", messages);
+			const restored = piEventsToChatMessages(events);
+			expect(restored).toHaveLength(2);
+			expect(restored[0].role).toBe("user");
+			expect(restored[0].content).toBe("Hello");
+			expect(restored[1].role).toBe("assistant");
+			expect(restored[1].content).toBe("Hi!");
 		});
 	});
 });

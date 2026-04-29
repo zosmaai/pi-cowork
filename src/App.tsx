@@ -2,13 +2,19 @@ import { ChatView } from "@/chat/ChatView";
 import { RightPanel } from "@/components/RightPanel";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { usePiStatus } from "@/hooks/usePiStatus";
-import { usePiStream } from "@/hooks/usePiStream";
+import { type StreamState, usePiStream } from "@/hooks/usePiStream";
 import { useSessions } from "@/hooks/useSessions";
-import { writeSession, readSession } from "@/lib/session-store";
+import {
+	chatMessagesToEvents,
+	piEventsToChatMessages,
+	readSession,
+	writeSession,
+} from "@/lib/session-store";
 import { SettingsView } from "@/settings/SettingsView";
 import { Sidebar } from "@/sidebar/Sidebar";
 import { TasksView } from "@/tasks/TasksView";
-import { useEffect, useRef, useState } from "react";
+import type { ChatMessage } from "@/types";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function App() {
 	const { status, loading: statusLoading, refetch } = usePiStatus();
@@ -25,6 +31,16 @@ function App() {
 	const [activeView, setActiveView] = useState<"chat" | "tasks" | "settings">("chat");
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
 
+	// Persistent chat history that survives stream resets
+	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+
+	// Ref to access chatHistory in effects without adding it as a dependency
+	const chatHistoryRef = useRef<ChatMessage[]>(chatHistory);
+	chatHistoryRef.current = chatHistory;
+
+	// Track the previous isRunning state to detect stream completion
+	const prevIsRunningRef = useRef(false);
+
 	// Use a ref for session ID to avoid React state timing issues
 	const currentSessionIdRef = useRef<string | null>(null);
 
@@ -35,33 +51,62 @@ function App() {
 		}
 	}, [activeSessionId]);
 
-	// Save session to disk when stream completes
+	// Handle stream completion — merge accumulated stream messages into history
+	// biome-ignore lint/correctness/useExhaustiveDependencies: intentional — we only want this to fire on isRunning transitions, accessing streamState.messages at that point is correct
 	useEffect(() => {
-		if (!streamState.isRunning && streamState.messages.length > 0 && currentSessionIdRef.current) {
-			const events = [
-				{
-					type: "session",
-					id: currentSessionIdRef.current,
-					timestamp: new Date().toISOString(),
-				},
-				...streamState.messages.map((msg) => ({
-					type: "message_start",
-					message: {
-						role: msg.role,
-						content: [{ type: "text", text: msg.content }],
-						...(msg.thinking ? { thinking: msg.thinking } : {}),
-					},
-				})),
-			];
-			console.log("[cowork] Saving session:", currentSessionIdRef.current, "messages:", streamState.messages.length);
-			writeSession(currentSessionIdRef.current, events)
+		const wasRunning = prevIsRunningRef.current;
+		const isNowRunning = streamState.isRunning;
+		prevIsRunningRef.current = isNowRunning;
+
+		// Detect: stream just finished (transition from running → idle)
+		if (wasRunning && !isNowRunning && streamState.messages.length > 0) {
+			const history = chatHistoryRef.current;
+
+			// Find the user message that started this stream
+			const streamUserMsg = streamState.messages.find((m) => m.role === "user");
+			const streamUserContent = streamUserMsg?.content || "";
+
+			// Find where in history this user message starts
+			let overlapStart = -1;
+			for (let i = history.length - 1; i >= 0; i--) {
+				if (history[i].role === "user" && history[i].content === streamUserContent) {
+					overlapStart = i;
+					break;
+				}
+			}
+
+			const finalMessages = streamState.messages.map((m) => ({ ...m, isStreaming: false }));
+
+			if (overlapStart >= 0) {
+				// Replace from overlap point onwards with new stream data
+				const newHistory = [...history.slice(0, overlapStart), ...finalMessages];
+				setChatHistory(newHistory);
+				saveSessionToDisk(newHistory);
+			} else {
+				// No overlap — append all stream messages to history
+				const newHistory = [...history, ...finalMessages];
+				setChatHistory(newHistory);
+				saveSessionToDisk(newHistory);
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- only trigger on isRunning change
+	}, [streamState.isRunning]);
+
+	// Helper to save current state to disk
+	const saveSessionToDisk = useCallback(
+		(messages: ChatMessage[]) => {
+			const sessionId = currentSessionIdRef.current;
+			if (!sessionId || messages.length === 0) return;
+
+			const events = chatMessagesToEvents(sessionId, messages);
+			writeSession(sessionId, events)
 				.then(() => {
-					console.log("[cowork] Session saved successfully");
 					refreshSessions();
 				})
 				.catch((err) => console.error("[cowork] Failed to save session:", err));
-		}
-	}, [streamState.isRunning, streamState.messages, refreshSessions]);
+		},
+		[refreshSessions],
+	);
 
 	// Keyboard shortcuts
 	useEffect(() => {
@@ -75,59 +120,51 @@ function App() {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, []);
 
-	async function handleSend(text: string) {
+	function handleSend(text: string) {
 		// Auto-create a session if none exists
 		if (!currentSessionIdRef.current) {
 			const id = crypto.randomUUID();
 			currentSessionIdRef.current = id;
 			createSession(id);
-			console.log("[cowork] Auto-created session:", id);
 		}
-		await startStream(text);
+		void startStream(text);
 	}
 
 	function handleNewSession() {
+		// Save current session first
+		if (currentSessionIdRef.current && chatHistoryRef.current.length > 0) {
+			saveSessionToDisk(chatHistoryRef.current);
+		}
+
 		const id = crypto.randomUUID();
 		currentSessionIdRef.current = id;
 		createSession(id);
-		console.log("[cowork] New session:", id);
+		setChatHistory([]);
+		streamDispatch({ type: "RESET" });
 	}
 
 	async function handleSelectSession(id: string) {
+		// Save current session first
+		if (currentSessionIdRef.current && chatHistoryRef.current.length > 0) {
+			saveSessionToDisk(chatHistoryRef.current);
+		}
+
 		currentSessionIdRef.current = id;
 		createSession(id);
+
 		const data = await readSession(id);
 		if (data?.events) {
-			// Convert stored events back to ChatMessage format
-			const loadedMessages: Array<{
-				id: string;
-				role: "user" | "assistant";
-				content: string;
-				timestamp: number;
-				thinking?: string;
-			}> = [];
-			for (const event of data.events) {
-				if (event.type === "message_start" && event.message) {
-					const msg = event.message as {
-						role: string;
-						content: Array<{ type: string; text: string }>;
-						thinking?: string;
-					};
-					const text = msg.content?.[0]?.text || "";
-					loadedMessages.push({
-						id: crypto.randomUUID(),
-						role: msg.role as "user" | "assistant",
-						content: text,
-						timestamp: Date.now(),
-						thinking: msg.thinking,
-					});
-				}
-			}
-			// Need to dispatch LOAD_SESSION — but we need the dispatch function
-			// For now, just log it. We'll need to expose dispatch from usePiStream
-			streamDispatch({ type: "LOAD_SESSION", messages: loadedMessages as unknown as import("@/types").ChatMessage[] });
+			const loadedMessages = piEventsToChatMessages(data.events);
+			setChatHistory(loadedMessages);
+			streamDispatch({ type: "LOAD_SESSION", messages: loadedMessages });
+		} else {
+			setChatHistory([]);
+			streamDispatch({ type: "RESET" });
 		}
 	}
+
+	// Build the display messages: chat history + active stream
+	const displayMessages = buildDisplayMessages(chatHistory, streamState);
 
 	if (statusLoading) {
 		return (
@@ -161,6 +198,7 @@ function App() {
 				onDeleteSession={(id: string) => {
 					if (currentSessionIdRef.current === id) {
 						currentSessionIdRef.current = null;
+						setChatHistory([]);
 					}
 					deleteSession(id);
 				}}
@@ -170,7 +208,15 @@ function App() {
 			{/* Main content */}
 			<main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
 				{activeView === "chat" && (
-					<ChatView streamState={streamState} onSend={handleSend} onAbort={abortStream} />
+					<ChatView
+						messages={displayMessages}
+						streamingMessage={streamState.streamingMessage}
+						isRunning={streamState.isRunning}
+						status={streamState.status}
+						error={streamState.error}
+						onSend={handleSend}
+						onAbort={abortStream}
+					/>
 				)}
 
 				{activeView === "tasks" && <TasksView />}
@@ -184,6 +230,45 @@ function App() {
 			)}
 		</>
 	);
+}
+
+/**
+ * Merge chat history with active stream state to produce display messages.
+ * - If not streaming and no stream messages: show history only
+ * - If streaming: show history followed by stream messages/streaming message
+ * - Deduplicate overlap between history tail and stream messages head
+ */
+function buildDisplayMessages(history: ChatMessage[], streamState: StreamState): ChatMessage[] {
+	// No active stream — just show history
+	if (
+		!streamState.isRunning &&
+		streamState.messages.length === 0 &&
+		!streamState.streamingMessage
+	) {
+		return history;
+	}
+
+	// Stream has messages — merge with history
+	if (streamState.messages.length === 0) {
+		return history;
+	}
+
+	const streamFirstUser = streamState.messages.find((m) => m.role === "user");
+	let overlapIdx = -1;
+	if (streamFirstUser) {
+		for (let i = history.length - 1; i >= 0; i--) {
+			if (history[i].role === "user" && history[i].content === streamFirstUser.content) {
+				overlapIdx = i;
+				break;
+			}
+		}
+	}
+
+	if (overlapIdx >= 0) {
+		return [...history.slice(0, overlapIdx), ...streamState.messages];
+	}
+
+	return [...history, ...streamState.messages];
 }
 
 export default App;

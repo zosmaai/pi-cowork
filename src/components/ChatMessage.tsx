@@ -7,9 +7,11 @@ import { ToolCallCard } from "./ToolCallCard";
 
 interface ChatMessageProps {
 	message: ChatMessageType;
+	/** Whether this is the latest message in the chat — used to default-expand tool calls */
+	isLatest?: boolean;
 }
 
-export function ChatMessageItem({ message }: ChatMessageProps) {
+export function ChatMessageItem({ message, isLatest = false }: ChatMessageProps) {
 	const [copied, setCopied] = useState(false);
 	const isUser = message.role === "user";
 	const isSystem = message.role === "system";
@@ -77,11 +79,15 @@ export function ChatMessageItem({ message }: ChatMessageProps) {
 					/>
 				)}
 
-				{/* Tool calls */}
+				{/* Tool calls — only latest message defaults expanded */}
 				{!isUser && message.toolCalls && message.toolCalls.length > 0 && (
 					<div className="mb-2">
-						{message.toolCalls.map((tc) => (
-							<ToolCallCard key={tc.id} toolCall={tc} />
+						{message.toolCalls.map((tc, idx) => (
+							<ToolCallCard
+								key={tc.id}
+								toolCall={tc}
+								defaultExpanded={isLatest && idx === (message.toolCalls?.length ?? 0) - 1}
+							/>
 						))}
 					</div>
 				)}

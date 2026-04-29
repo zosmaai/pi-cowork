@@ -5,10 +5,11 @@ import { useState } from "react";
 
 interface ToolCallCardProps {
 	toolCall: ToolCallInfo;
+	defaultExpanded?: boolean;
 }
 
-export function ToolCallCard({ toolCall }: ToolCallCardProps) {
-	const [expanded, setExpanded] = useState(true);
+export function ToolCallCard({ toolCall, defaultExpanded = true }: ToolCallCardProps) {
+	const [expanded, setExpanded] = useState(defaultExpanded);
 
 	const statusIcon =
 		toolCall.status === "running" ? (
