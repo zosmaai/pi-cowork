@@ -1,4 +1,4 @@
-import { MessageSquare, CheckSquare, Settings } from "lucide-react";
+import { CheckSquare, MessageSquare, Settings } from "lucide-react";
 
 interface NavIconsProps {
 	activeView: "chat" | "tasks" | "settings";

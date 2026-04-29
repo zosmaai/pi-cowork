@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeAll } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { Sidebar } from "./Sidebar";
 import type { SessionMeta } from "@/lib/session-store";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { Sidebar } from "./Sidebar";
 
 beforeAll(() => {
 	Object.defineProperty(window, "matchMedia", {

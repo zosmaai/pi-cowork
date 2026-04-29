@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { streamReducer, INITIAL_STATE } from "./usePiStream";
-import type { ChatMessage, ToolCallInfo } from "@/types";
+import type { ToolCallInfo } from "@/types";
+import { describe, expect, it } from "vitest";
+import { INITIAL_STATE, streamReducer } from "./usePiStream";
 
 describe("streamReducer", () => {
 	it("START_STREAM creates user message and assistant placeholder", () => {
@@ -15,9 +15,9 @@ describe("streamReducer", () => {
 		expect(state.messages[0].role).toBe("user");
 		expect(state.messages[0].content).toBe("Hello pi");
 		expect(state.streamingMessage).not.toBeNull();
-		expect(state.streamingMessage!.role).toBe("assistant");
-		expect(state.streamingMessage!.isStreaming).toBe(true);
-		expect(state.streamingMessage!.content).toBe("");
+		expect(state.streamingMessage?.role).toBe("assistant");
+		expect(state.streamingMessage?.isStreaming).toBe(true);
+		expect(state.streamingMessage?.content).toBe("");
 	});
 
 	it("TEXT_DELTA accumulates into streaming message", () => {
@@ -28,7 +28,7 @@ describe("streamReducer", () => {
 		state = streamReducer(state, { type: "TEXT_DELTA", delta: "Hello " });
 		state = streamReducer(state, { type: "TEXT_DELTA", delta: "world" });
 
-		expect(state.streamingMessage!.content).toBe("Hello world");
+		expect(state.streamingMessage?.content).toBe("Hello world");
 		expect(state.status).toBe("responding");
 	});
 
@@ -42,7 +42,7 @@ describe("streamReducer", () => {
 			delta: "Let me think...",
 		});
 
-		expect(state.streamingMessage!.thinking).toBe("Let me think...");
+		expect(state.streamingMessage?.thinking).toBe("Let me think...");
 		expect(state.status).toBe("thinking");
 	});
 
@@ -57,8 +57,8 @@ describe("streamReducer", () => {
 			provider: "anthropic",
 		});
 
-		expect(state.streamingMessage!.model).toBe("claude-sonnet-4-5");
-		expect(state.streamingMessage!.provider).toBe("anthropic");
+		expect(state.streamingMessage?.model).toBe("claude-sonnet-4-5");
+		expect(state.streamingMessage?.provider).toBe("anthropic");
 	});
 
 	it("TOOL_CALL_START adds tool call to streaming message", () => {
@@ -75,8 +75,8 @@ describe("streamReducer", () => {
 		});
 		state = streamReducer(state, { type: "TOOL_CALL_START", toolCall: tc });
 
-		expect(state.streamingMessage!.toolCalls).toHaveLength(1);
-		expect(state.streamingMessage!.toolCalls![0].name).toBe("bash");
+		expect(state.streamingMessage?.toolCalls).toHaveLength(1);
+		expect(state.streamingMessage?.toolCalls?.[0].name).toBe("bash");
 		expect(state.status).toBe("tool_call");
 	});
 
@@ -100,10 +100,8 @@ describe("streamReducer", () => {
 			status: "completed",
 		});
 
-		expect(state.streamingMessage!.toolCalls![0].status).toBe("completed");
-		expect(state.streamingMessage!.toolCalls![0].result).toBe(
-			"file1.txt file2.txt",
-		);
+		expect(state.streamingMessage?.toolCalls?.[0].status).toBe("completed");
+		expect(state.streamingMessage?.toolCalls?.[0].result).toBe("file1.txt file2.txt");
 	});
 
 	it("TOOL_CALL_UPDATE marks error correctly", () => {
@@ -127,8 +125,8 @@ describe("streamReducer", () => {
 			isError: true,
 		});
 
-		expect(state.streamingMessage!.toolCalls![0].status).toBe("error");
-		expect(state.streamingMessage!.toolCalls![0].isError).toBe(true);
+		expect(state.streamingMessage?.toolCalls?.[0].status).toBe("error");
+		expect(state.streamingMessage?.toolCalls?.[0].isError).toBe(true);
 	});
 
 	it("STREAM_COMPLETE moves streaming message to messages", () => {

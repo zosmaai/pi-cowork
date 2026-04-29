@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { listSessions, writeSession, deleteSession, readSession } from "./session-store";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { deleteSession, listSessions, readSession, writeSession } from "./session-store";
 
 vi.mock("@tauri-apps/api/path", () => ({
 	homeDir: vi.fn().mockResolvedValue("/mock/home"),
@@ -15,7 +15,7 @@ vi.mock("@tauri-apps/plugin-fs", () => ({
 	exists: vi.fn(),
 }));
 
-import { readDir, readTextFile, writeTextFile, mkdir, remove, exists } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 
 const mockedReadDir = vi.mocked(readDir);
 const mockedReadTextFile = vi.mocked(readTextFile);
@@ -45,9 +45,7 @@ describe("session-store", () => {
 
 		it("extracts metadata from session files", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "2026-04-29T00-00-00Z_abc123.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "2026-04-29T00-00-00Z_abc123.jsonl" }] as any);
 			mockedReadTextFile.mockResolvedValue(
 				[
 					JSON.stringify({
@@ -108,9 +106,7 @@ describe("session-store", () => {
 
 		it("truncates long titles", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "test_long.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "test_long.jsonl" }] as any);
 			const longText = "a".repeat(100);
 			mockedReadTextFile.mockResolvedValue(
 				[
@@ -136,9 +132,7 @@ describe("session-store", () => {
 
 		it("handles untitled sessions gracefully", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "empty_session.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "empty_session.jsonl" }] as any);
 			mockedReadTextFile.mockResolvedValue(
 				[
 					JSON.stringify({
@@ -187,18 +181,14 @@ describe("session-store", () => {
 
 		it("returns null when session file not found", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "other.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "other.jsonl" }] as any);
 			const result = await readSession("abc");
 			expect(result).toBeNull();
 		});
 
 		it("reads and parses session file", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "session_abc123.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "session_abc123.jsonl" }] as any);
 			mockedReadTextFile.mockResolvedValue(
 				[
 					JSON.stringify({
@@ -218,18 +208,16 @@ describe("session-store", () => {
 
 			const result = await readSession("abc123");
 			expect(result).not.toBeNull();
-			expect(result!.meta.id).toBe("abc123");
-			expect(result!.meta.title).toBe("Hello");
-			expect(result!.events).toHaveLength(2);
+			expect(result?.meta.id).toBe("abc123");
+			expect(result?.meta.title).toBe("Hello");
+			expect(result?.events).toHaveLength(2);
 		});
 	});
 
 	describe("deleteSession", () => {
 		it("removes the session file", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "delete_me.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "delete_me.jsonl" }] as any);
 			mockedRemove.mockResolvedValue(undefined);
 
 			await deleteSession("delete_me");
@@ -238,9 +226,7 @@ describe("session-store", () => {
 
 		it("does nothing when session not found", async () => {
 			mockedExists.mockResolvedValue(true);
-			mockedReadDir.mockResolvedValue([
-				{ name: "other.jsonl" },
-			] as any);
+			mockedReadDir.mockResolvedValue([{ name: "other.jsonl" }] as any);
 
 			await deleteSession("not_found");
 			expect(mockedRemove).not.toHaveBeenCalled();

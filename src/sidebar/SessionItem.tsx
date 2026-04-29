@@ -1,5 +1,5 @@
-import { MessageSquare, Trash2 } from "lucide-react";
 import type { SessionMeta } from "@/lib/session-store";
+import { MessageSquare, Trash2 } from "lucide-react";
 
 interface SessionItemProps {
 	session: SessionMeta;
@@ -8,12 +8,7 @@ interface SessionItemProps {
 	onDelete: (id: string) => void;
 }
 
-export function SessionItem({
-	session,
-	isActive,
-	onSelect,
-	onDelete,
-}: SessionItemProps) {
+export function SessionItem({ session, isActive, onSelect, onDelete }: SessionItemProps) {
 	return (
 		<div
 			role="button"

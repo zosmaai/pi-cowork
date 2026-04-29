@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Brain, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Brain, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 interface ThinkingBlockProps {
 	thinking: string;

@@ -1,5 +1,5 @@
-import { Settings, FolderOpen, Info } from "lucide-react";
 import { usePiStatus } from "@/hooks/usePiStatus";
+import { FolderOpen, Info, Settings } from "lucide-react";
 
 export function SettingsView() {
 	const { status } = usePiStatus();
@@ -13,9 +13,7 @@ export function SettingsView() {
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold text-foreground">Settings</h1>
-						<p className="text-sm text-muted-foreground">
-							Configure Pi Cowork
-						</p>
+						<p className="text-sm text-muted-foreground">Configure Pi Cowork</p>
 					</div>
 				</div>
 
@@ -23,9 +21,7 @@ export function SettingsView() {
 					<div className="rounded-xl border bg-card p-4">
 						<div className="flex items-center gap-3 mb-3">
 							<FolderOpen className="w-5 h-5 text-muted-foreground" />
-							<h3 className="text-sm font-medium text-foreground">
-								Home Directory
-							</h3>
+							<h3 className="text-sm font-medium text-foreground">Home Directory</h3>
 						</div>
 						<p className="text-xs text-muted-foreground font-mono bg-muted rounded-lg px-3 py-2">
 							~/pi-cowork

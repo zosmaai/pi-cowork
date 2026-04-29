@@ -1,12 +1,13 @@
-import { useCallback, useReducer } from "react";
-import { Channel, invoke } from "@tauri-apps/api/core";
+import type { ChatMessage, ToolCallInfo } from "@/types";
 import type {
 	PiEvent,
 	PiMessageUpdateEvent,
 	PiToolExecutionEndEvent,
 	PiToolExecutionUpdateEvent,
+	PiAgentEndEvent,
 } from "@/types/pi-events";
-import type { ChatMessage, ToolCallInfo } from "@/types";
+import { Channel, invoke } from "@tauri-apps/api/core";
+import { useCallback, useReducer } from "react";
 
 export interface StreamState {
 	messages: ChatMessage[];
@@ -32,6 +33,7 @@ export type StreamAction =
 	| { type: "STREAM_COMPLETE" }
 	| { type: "STREAM_ERROR"; error: string }
 	| { type: "ABORT_STREAM" }
+	| { type: "LOAD_SESSION"; messages: ChatMessage[] }
 	| { type: "RESET" };
 
 export const INITIAL_STATE: StreamState = {
@@ -42,10 +44,7 @@ export const INITIAL_STATE: StreamState = {
 	error: null,
 };
 
-export function streamReducer(
-	state: StreamState,
-	action: StreamAction,
-): StreamState {
+export function streamReducer(state: StreamState, action: StreamAction): StreamState {
 	switch (action.type) {
 		case "START_STREAM":
 			return {
@@ -166,6 +165,12 @@ export function streamReducer(
 		case "ABORT_STREAM":
 			return { ...state, isRunning: false, status: "idle" };
 
+		case "LOAD_SESSION":
+			return {
+				...INITIAL_STATE,
+				messages: action.messages,
+			};
+
 		case "RESET":
 			return INITIAL_STATE;
 
@@ -200,6 +205,9 @@ export function usePiStream() {
 						case "thinking_delta":
 							dispatch({ type: "THINKING_DELTA", delta: ame.delta });
 							break;
+						case "text_start":
+							// Status transitions to responding via TEXT_DELTA
+							break;
 						case "text_delta":
 							dispatch({ type: "TEXT_DELTA", delta: ame.delta });
 							break;
@@ -222,6 +230,9 @@ export function usePiStream() {
 							});
 							break;
 						}
+						case "done":
+							// Assistant message complete, but stream may continue with tool results
+							break;
 					}
 					break;
 				}
@@ -246,6 +257,20 @@ export function usePiStream() {
 						status: te.isError ? "error" : "completed",
 						isError: te.isError,
 					});
+					break;
+				}
+
+				case "agent_end": {
+					const ae = event as PiAgentEndEvent;
+					// Extract usage from final message if available
+					if (ae.messages.length > 0) {
+						const lastMsg = ae.messages[ae.messages.length - 1];
+						if (lastMsg.usage) {
+							// Usage info is available but we don't have a specific action for it
+							// The stream is complete anyway
+						}
+					}
+					dispatch({ type: "STREAM_COMPLETE" });
 					break;
 				}
 
