@@ -1,81 +1,113 @@
-import { FolderOpen, FileText, Globe } from "lucide-react";
+import { X, Terminal, Check, Loader2, AlertCircle } from "lucide-react";
+import type { StreamState } from "@/hooks/usePiStream";
 
-export function RightPanel() {
+interface RightPanelProps {
+	streamState: StreamState;
+	onClose: () => void;
+}
+
+export function RightPanel({ streamState, onClose }: RightPanelProps) {
+	const toolCalls = streamState.streamingMessage?.toolCalls || [];
+	const hasTools = toolCalls.length > 0;
+
 	return (
-		<div className="w-[280px] flex flex-col gap-4 p-4 border-l bg-sidebar overflow-y-auto">
-			{/* Progress */}
+		<div className="w-[280px] flex flex-col gap-4 p-4 border-l bg-sidebar overflow-y-auto shrink-0">
+			<div className="flex items-center justify-between">
+				<h3 className="text-sm font-semibold text-foreground">Context</h3>
+				<button
+					type="button"
+					onClick={onClose}
+					className="p-1 rounded hover:bg-sidebar-accent transition-colors"
+					aria-label="Close panel"
+				>
+					<X className="w-4 h-4 text-muted-foreground" />
+				</button>
+			</div>
+
+			{/* Status */}
 			<div className="rounded-xl border bg-card p-4">
-				<h3 className="text-sm font-semibold text-foreground mb-3">Progress</h3>
+				<h3 className="text-sm font-semibold text-foreground mb-3">Status</h3>
 				<div className="flex items-center gap-2">
-					<div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
-						<div className="w-2 h-2 rounded-full bg-primary" />
-					</div>
-					<div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
-						<div className="w-2 h-2 rounded-full bg-primary" />
-					</div>
-					<div className="w-5 h-5 rounded-full border-2 border-border" />
+					{streamState.isRunning ? (
+						<>
+							<Loader2 className="w-4 h-4 animate-spin text-primary" />
+							<span className="text-xs text-muted-foreground capitalize">
+								{streamState.status.replace("_", " ")}
+							</span>
+						</>
+					) : (
+						<>
+							<Check className="w-4 h-4 text-emerald-500" />
+							<span className="text-xs text-muted-foreground">Idle</span>
+						</>
+					)}
 				</div>
-				<p className="text-xs text-muted-foreground mt-3">Steps will show as the task unfolds.</p>
+				{streamState.streamingMessage?.model && (
+					<p className="text-[10px] text-muted-foreground mt-2">
+						{streamState.streamingMessage.provider}/
+						{streamState.streamingMessage.model}
+					</p>
+				)}
 			</div>
 
-			{/* Artifacts */}
-			<div className="rounded-xl border bg-card p-4">
-				<h3 className="text-sm font-semibold text-foreground mb-3">Artifacts</h3>
-				<div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-					<FileText className="w-5 h-5 text-muted-foreground" />
-				</div>
-				<p className="text-xs text-muted-foreground mt-3">
-					Outputs created during the task land here.
-				</p>
-			</div>
-
-			{/* Context */}
-			<div className="rounded-xl border bg-card p-4">
-				<h3 className="text-sm font-semibold text-foreground mb-3">Context</h3>
-				<div className="flex items-center gap-2">
-					<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-						<FolderOpen className="w-4 h-4 text-muted-foreground" />
-					</div>
-					<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-						<FileText className="w-4 h-4 text-muted-foreground" />
-					</div>
-				</div>
-				<p className="text-xs text-muted-foreground mt-3">
-					Track the tools and files in use as pi works.
-				</p>
-			</div>
-
-			{/* Suggested connectors */}
-			<div className="rounded-xl border bg-card p-4">
-				<div className="flex items-center justify-between mb-3">
-					<h3 className="text-sm font-semibold text-foreground">Suggested connectors</h3>
-				</div>
-				<p className="text-xs text-muted-foreground mb-3">
-					Pi uses connectors to browse websites, manage tasks, and more.
-				</p>
-				<div className="space-y-2">
-					<button
-						type="button"
-						className="w-full flex items-center gap-3 px-3 py-2 rounded-lg border hover:bg-accent transition-colors text-left"
-					>
-						<div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
-							<Globe className="w-3.5 h-3.5 text-muted-foreground" />
+			{/* Tool calls */}
+			{hasTools && (
+				<div className="rounded-xl border bg-card p-4">
+					<h3 className="text-sm font-semibold text-foreground mb-3">
+						Tool Calls ({toolCalls.length})
+					</h3>
+					<div className="space-y-2">
+						{toolCalls.map((tc) => (
+							<div
+								key={tc.id}
+								className={`rounded-lg border p-2 ${
+									tc.status === "running"
+										? "bg-primary/5 border-primary/20"
+										: tc.status === "error"
+											? "bg-destructive/5 border-destructive/20"
+											: "bg-emerald-500/5 border-emerald-500/20"
+								}`}
+							>
+								<div className="flex items-center gap-2">
+									{tc.status === "running" ? (
+										<Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+									) : tc.status === "error" ? (
+										<AlertCircle className="w-3.5 h-3.5 text-destructive" />
+									) : (
+										<Check className="w-3.5 h-3.5 text-emerald-500" />
+									)}
+									<Terminal className="w-3.5 h-3.5 text-muted-foreground" />
+									<span className="text-xs font-medium text-foreground flex-1">
+										{tc.name}
+									</span>
+								</div>
+								{tc.result && (
+									<pre className="mt-1 text-[10px] text-muted-foreground bg-muted/50 rounded p-1.5 overflow-x-auto whitespace-pre-wrap">
+										{tc.result}
+									</pre>
+									)}
+								</div>
+							))}
 						</div>
-						<span className="text-xs font-medium text-foreground flex-1">GitHub</span>
-						<span className="text-lg text-muted-foreground leading-none">+</span>
-					</button>
-					<button
-						type="button"
-						className="w-full flex items-center gap-3 px-3 py-2 rounded-lg border hover:bg-accent transition-colors text-left"
-					>
-						<div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
-							<FolderOpen className="w-3.5 h-3.5 text-muted-foreground" />
+					</div>
+				)}
+
+			{/* Usage */}
+			{streamState.messages.length > 0 && (
+				<div className="rounded-xl border bg-card p-4">
+					<h3 className="text-sm font-semibold text-foreground mb-3">
+						Session
+					</h3>
+					<div className="space-y-1 text-xs text-muted-foreground">
+						<div className="flex justify-between">
+							<span>Messages</span>
+							<span className="text-foreground">
+								{streamState.messages.length}
+							</span>
 						</div>
-						<span className="text-xs font-medium text-foreground flex-1">Local Files</span>
-						<span className="text-lg text-muted-foreground leading-none">+</span>
-					</button>
+					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }

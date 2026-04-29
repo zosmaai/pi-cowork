@@ -7,6 +7,7 @@ import { SettingsView } from "@/settings/SettingsView";
 import { usePiStatus } from "@/hooks/usePiStatus";
 import { usePiStream } from "@/hooks/usePiStream";
 import { useSessions } from "@/hooks/useSessions";
+import { writeSession } from "@/lib/session-store";
 import { useEffect, useState } from "react";
 
 function App() {
@@ -24,6 +25,32 @@ function App() {
 		"chat",
 	);
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
+
+	// Save session to disk when stream completes
+	useEffect(() => {
+		if (
+			!streamState.isRunning &&
+			streamState.messages.length > 0 &&
+			activeSessionId
+		) {
+			const events = [
+				{
+					type: "session",
+					id: activeSessionId,
+					timestamp: new Date().toISOString(),
+				},
+				...streamState.messages.map((msg) => ({
+					type: "message_start",
+					message: {
+						role: msg.role,
+						content: [{ type: "text", text: msg.content }],
+						...(msg.thinking ? { thinking: msg.thinking } : {}),
+					},
+				})),
+			];
+			writeSession(activeSessionId, events).catch(console.error);
+		}
+	}, [streamState.isRunning, streamState.messages, activeSessionId]);
 
 	// Keyboard shortcuts
 	useEffect(() => {
@@ -97,7 +124,9 @@ function App() {
 			</main>
 
 			{/* Right panel */}
-			{rightPanelOpen && <RightPanel />}
+			{rightPanelOpen && (
+				<RightPanel streamState={streamState} onClose={() => setRightPanelOpen(false)} />
+			)}
 		</>
 	);
 }
