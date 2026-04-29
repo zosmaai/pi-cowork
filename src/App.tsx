@@ -101,7 +101,7 @@ function App() {
 			}
 			// Need to dispatch LOAD_SESSION — but we need the dispatch function
 			// For now, just log it. We'll need to expose dispatch from usePiStream
-			streamDispatch({ type: "LOAD_SESSION", messages: loadedMessages as any });
+			streamDispatch({ type: "LOAD_SESSION", messages: loadedMessages as unknown as import("@/types").ChatMessage[] });
 		}
 	}
 

@@ -114,7 +114,7 @@ export async function readSession(id: string): Promise<SessionData | null> {
 			title: extractTitle(lines),
 			timestamp: new Date(header.timestamp as string).getTime(),
 			messageCount: events.filter(
-				(e) => (e as any).type === "message_start" && (e as any).message?.role === "user",
+				(e) => (e as Record<string, unknown>).type === "message_start" && ((e as Record<string, unknown>).message as Record<string, unknown>)?.role === "user",
 			).length,
 		},
 		events,
