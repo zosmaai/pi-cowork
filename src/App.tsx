@@ -8,7 +8,7 @@ import { writeSession, readSession } from "@/lib/session-store";
 import { SettingsView } from "@/settings/SettingsView";
 import { Sidebar } from "@/sidebar/Sidebar";
 import { TasksView } from "@/tasks/TasksView";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function App() {
 	const { status, loading: statusLoading, refetch } = usePiStatus();
@@ -25,13 +25,23 @@ function App() {
 	const [activeView, setActiveView] = useState<"chat" | "tasks" | "settings">("chat");
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
 
+	// Use a ref for session ID to avoid React state timing issues
+	const currentSessionIdRef = useRef<string | null>(null);
+
+	// Keep ref in sync with state
+	useEffect(() => {
+		if (activeSessionId) {
+			currentSessionIdRef.current = activeSessionId;
+		}
+	}, [activeSessionId]);
+
 	// Save session to disk when stream completes
 	useEffect(() => {
-		if (!streamState.isRunning && streamState.messages.length > 0 && activeSessionId) {
+		if (!streamState.isRunning && streamState.messages.length > 0 && currentSessionIdRef.current) {
 			const events = [
 				{
 					type: "session",
-					id: activeSessionId,
+					id: currentSessionIdRef.current,
 					timestamp: new Date().toISOString(),
 				},
 				...streamState.messages.map((msg) => ({
@@ -43,11 +53,15 @@ function App() {
 					},
 				})),
 			];
-			writeSession(activeSessionId, events)
-				.then(() => refreshSessions())
-				.catch(console.error);
+			console.log("[cowork] Saving session:", currentSessionIdRef.current, "messages:", streamState.messages.length);
+			writeSession(currentSessionIdRef.current, events)
+				.then(() => {
+					console.log("[cowork] Session saved successfully");
+					refreshSessions();
+				})
+				.catch((err) => console.error("[cowork] Failed to save session:", err));
 		}
-	}, [streamState.isRunning, streamState.messages, activeSessionId, refreshSessions]);
+	}, [streamState.isRunning, streamState.messages, refreshSessions]);
 
 	// Keyboard shortcuts
 	useEffect(() => {
@@ -62,15 +76,25 @@ function App() {
 	}, []);
 
 	async function handleSend(text: string) {
+		// Auto-create a session if none exists
+		if (!currentSessionIdRef.current) {
+			const id = crypto.randomUUID();
+			currentSessionIdRef.current = id;
+			createSession(id);
+			console.log("[cowork] Auto-created session:", id);
+		}
 		await startStream(text);
 	}
 
 	function handleNewSession() {
 		const id = crypto.randomUUID();
+		currentSessionIdRef.current = id;
 		createSession(id);
+		console.log("[cowork] New session:", id);
 	}
 
 	async function handleSelectSession(id: string) {
+		currentSessionIdRef.current = id;
 		createSession(id);
 		const data = await readSession(id);
 		if (data?.events) {
@@ -134,7 +158,12 @@ function App() {
 				activeView={activeView}
 				onNewSession={handleNewSession}
 				onSelectSession={handleSelectSession}
-				onDeleteSession={deleteSession}
+				onDeleteSession={(id: string) => {
+					if (currentSessionIdRef.current === id) {
+						currentSessionIdRef.current = null;
+					}
+					deleteSession(id);
+				}}
 				onNavigate={setActiveView}
 			/>
 
