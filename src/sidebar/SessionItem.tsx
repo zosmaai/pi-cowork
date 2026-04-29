@@ -1,5 +1,5 @@
-import type { SessionMeta } from "@/lib/session-store";
 import { MessageSquare, Trash2 } from "lucide-react";
+import type { SessionMeta } from "@/lib/session-store";
 
 interface SessionItemProps {
 	session: SessionMeta;
@@ -8,8 +8,14 @@ interface SessionItemProps {
 	onDelete: (id: string) => void;
 }
 
-export function SessionItem({ session, isActive, onSelect, onDelete }: SessionItemProps) {
+export function SessionItem({
+	session,
+	isActive,
+	onSelect,
+	onDelete,
+}: SessionItemProps) {
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: Can't nest <button> elements, inner delete button needs separate handler
 		<div
 			role="button"
 			tabIndex={0}

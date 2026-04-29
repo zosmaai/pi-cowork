@@ -184,8 +184,8 @@ describe("streamReducer", () => {
 
 	it("ignores unknown actions", () => {
 		const state = streamReducer(INITIAL_STATE, {
-			type: "UNKNOWN_ACTION" as any,
-		});
+			type: "UNKNOWN_ACTION",
+		} as unknown as import("./usePiStream").StreamAction);
 		expect(state).toEqual(INITIAL_STATE);
 	});
 });
