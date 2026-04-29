@@ -9,8 +9,8 @@ export function TasksView() {
 			<div className="text-center">
 				<h2 className="text-lg font-medium text-foreground mb-1">Tasks</h2>
 				<p className="text-sm max-w-sm">
-					Scheduled prompts and recurring tasks will appear here.
-					Ask Pi to schedule something for you.
+					Scheduled prompts and recurring tasks will appear here. Ask Pi to schedule something for
+					you.
 				</p>
 			</div>
 			<div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">

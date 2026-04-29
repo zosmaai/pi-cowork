@@ -1,5 +1,5 @@
-import { X, Terminal, Check, Loader2, AlertCircle } from "lucide-react";
 import type { StreamState } from "@/hooks/usePiStream";
+import { AlertCircle, Check, Loader2, Terminal, X } from "lucide-react";
 
 interface RightPanelProps {
 	streamState: StreamState;
@@ -44,8 +44,7 @@ export function RightPanel({ streamState, onClose }: RightPanelProps) {
 				</div>
 				{streamState.streamingMessage?.model && (
 					<p className="text-[10px] text-muted-foreground mt-2">
-						{streamState.streamingMessage.provider}/
-						{streamState.streamingMessage.model}
+						{streamState.streamingMessage.provider}/{streamState.streamingMessage.model}
 					</p>
 				)}
 			</div>
@@ -77,33 +76,27 @@ export function RightPanel({ streamState, onClose }: RightPanelProps) {
 										<Check className="w-3.5 h-3.5 text-emerald-500" />
 									)}
 									<Terminal className="w-3.5 h-3.5 text-muted-foreground" />
-									<span className="text-xs font-medium text-foreground flex-1">
-										{tc.name}
-									</span>
+									<span className="text-xs font-medium text-foreground flex-1">{tc.name}</span>
 								</div>
 								{tc.result && (
 									<pre className="mt-1 text-[10px] text-muted-foreground bg-muted/50 rounded p-1.5 overflow-x-auto whitespace-pre-wrap">
 										{tc.result}
 									</pre>
-									)}
-								</div>
-							))}
-						</div>
+								)}
+							</div>
+						))}
 					</div>
-				)}
+				</div>
+			)}
 
 			{/* Usage */}
 			{streamState.messages.length > 0 && (
 				<div className="rounded-xl border bg-card p-4">
-					<h3 className="text-sm font-semibold text-foreground mb-3">
-						Session
-					</h3>
+					<h3 className="text-sm font-semibold text-foreground mb-3">Session</h3>
 					<div className="space-y-1 text-xs text-muted-foreground">
 						<div className="flex justify-between">
 							<span>Messages</span>
-							<span className="text-foreground">
-								{streamState.messages.length}
-							</span>
+							<span className="text-foreground">{streamState.messages.length}</span>
 						</div>
 					</div>
 				</div>

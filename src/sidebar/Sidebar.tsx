@@ -1,9 +1,9 @@
-import { Plus } from "lucide-react";
-import type { SessionMeta } from "@/lib/session-store";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import type { SessionMeta } from "@/lib/session-store";
 import type { PiStatus } from "@/types";
-import { SessionList } from "./SessionList";
+import { Plus } from "lucide-react";
 import { NavIcons } from "./NavIcons";
+import { SessionList } from "./SessionList";
 
 interface SidebarProps {
 	sessions: SessionMeta[];
@@ -60,12 +60,8 @@ export function Sidebar({
 							Pi
 						</div>
 						<div className="leading-tight">
-							<div className="text-xs font-medium text-sidebar-foreground">
-								Pi Cowork
-							</div>
-							<div className="text-[10px] text-muted-foreground">
-								{status?.version || "Ready"}
-							</div>
+							<div className="text-xs font-medium text-sidebar-foreground">Pi Cowork</div>
+							<div className="text-[10px] text-muted-foreground">{status?.version || "Ready"}</div>
 						</div>
 					</div>
 					<ThemeToggle />

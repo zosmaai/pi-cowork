@@ -1,8 +1,8 @@
-import { useRef } from "react";
 import { ChatMessageItem } from "@/components/ChatMessage";
 import { MessageInput } from "@/components/MessageInput";
 import type { StreamState } from "@/hooks/usePiStream";
 import { Loader2, Square } from "lucide-react";
+import { useRef } from "react";
 
 interface ChatViewProps {
 	streamState: StreamState;
@@ -20,9 +20,7 @@ export function ChatView({ streamState, onSend, onAbort }: ChatViewProps) {
 				{streamState.messages.length === 0 && !streamState.streamingMessage ? (
 					<div className="flex flex-col items-center justify-center h-full gap-5 px-8">
 						<div className="text-4xl">✦</div>
-						<h1 className="text-2xl font-semibold text-foreground">
-							What are you working on?
-						</h1>
+						<h1 className="text-2xl font-semibold text-foreground">What are you working on?</h1>
 						<p className="text-muted-foreground text-sm max-w-md text-center">
 							Start a new session to chat with Pi.
 						</p>
@@ -45,13 +43,10 @@ export function ChatView({ streamState, onSend, onAbort }: ChatViewProps) {
 				<div className="flex items-center justify-between px-4 py-2 border-t bg-card">
 					<div className="flex items-center gap-2 text-xs text-muted-foreground">
 						<Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-						<span className="capitalize">
-							{streamState.status.replace("_", " ")}
-						</span>
+						<span className="capitalize">{streamState.status.replace("_", " ")}</span>
 						{streamState.streamingMessage?.model && (
 							<span className="text-[10px] bg-muted px-1.5 py-0.5 rounded">
-								{streamState.streamingMessage.provider}/
-								{streamState.streamingMessage.model}
+								{streamState.streamingMessage.provider}/{streamState.streamingMessage.model}
 							</span>
 						)}
 					</div>
@@ -66,11 +61,7 @@ export function ChatView({ streamState, onSend, onAbort }: ChatViewProps) {
 				</div>
 			)}
 
-			<MessageInput
-				ref={inputRef}
-				onSend={onSend}
-				disabled={streamState.isRunning}
-			/>
+			<MessageInput ref={inputRef} onSend={onSend} disabled={streamState.isRunning} />
 		</>
 	);
 }

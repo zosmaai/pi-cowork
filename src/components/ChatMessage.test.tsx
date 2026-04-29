@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { ChatMessage } from "@/types";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatMessageItem } from "./ChatMessage";
-import type { ChatMessage } from "@/types";
 
 const mockWriteText = vi.fn();
 vi.stubGlobal("navigator", {

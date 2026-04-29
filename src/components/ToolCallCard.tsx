@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Loader2, Terminal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ToolCallInfo } from "@/types";
+import { Check, ChevronDown, ChevronUp, Loader2, Terminal, X } from "lucide-react";
+import { useState } from "react";
 
 interface ToolCallCardProps {
 	toolCall: ToolCallInfo;

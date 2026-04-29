@@ -1,9 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import {
-	listSessions,
-	deleteSession,
-	type SessionMeta,
-} from "@/lib/session-store";
+import { type SessionMeta, deleteSession, listSessions } from "@/lib/session-store";
+import { useCallback, useEffect, useState } from "react";
 
 export function useSessions() {
 	const [sessions, setSessions] = useState<SessionMeta[]>([]);

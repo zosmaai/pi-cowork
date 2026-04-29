@@ -1,12 +1,5 @@
-import {
-	readTextFile,
-	writeTextFile,
-	readDir,
-	mkdir,
-	remove,
-	exists,
-} from "@tauri-apps/plugin-fs";
-import { join, homeDir } from "@tauri-apps/api/path";
+import { homeDir, join } from "@tauri-apps/api/path";
+import { exists, mkdir, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 
 export interface SessionMeta {
 	id: string;
@@ -54,7 +47,7 @@ export async function listSessions(): Promise<SessionMeta[]> {
 	const sessions: SessionMeta[] = [];
 	for (const file of jsonlFiles) {
 		if (!file.name) continue;
-		const content = await readTextFile(join(dir, file.name));
+			const content = await readTextFile(await join(dir, file.name));
 		const lines = content.trim().split("\n");
 		if (lines.length === 0) continue;
 
@@ -78,24 +71,29 @@ export async function listSessions(): Promise<SessionMeta[]> {
 	return sessions;
 }
 
-export async function writeSession(
-	id: string,
-	events: Record<string, unknown>[],
-): Promise<void> {
+export async function writeSession(id: string, events: Record<string, unknown>[]): Promise<void> {
 	const dir = await sessionDir();
 	await mkdir(dir, { recursive: true });
+
+	// Remove any existing file for this session ID to prevent duplicates
+	const dirExists = await exists(dir);
+	if (dirExists) {
+		const entries = await readDir(dir);
+		const existing = entries.find((e) => e.name?.includes(id));
+		if (existing?.name) {
+			await remove(await join(dir, existing.name));
+		}
+	}
 
 	const header = events[0];
 	const ts = (header.timestamp as string) || new Date().toISOString();
 	const safeTs = ts.replace(/[:.]/g, "-");
 	const filename = `${safeTs}_${id}.jsonl`;
-	const content = events.map((e) => JSON.stringify(e)).join("\n") + "\n";
-	await writeTextFile(join(dir, filename), content);
+	const content = `${events.map((e) => JSON.stringify(e)).join("\n")}\n`;
+	await writeTextFile(await join(dir, filename), content);
 }
 
-export async function readSession(
-	id: string,
-): Promise<SessionData | null> {
+export async function readSession(id: string): Promise<SessionData | null> {
 	const dir = await sessionDir();
 
 	const dirExists = await exists(dir);
@@ -105,7 +103,7 @@ export async function readSession(
 	const match = entries.find((e) => e.name?.includes(id));
 	if (!match || !match.name) return null;
 
-	const content = await readTextFile(join(dir, match.name));
+	const content = await readTextFile(await join(dir, match.name));
 	const lines = content.trim().split("\n");
 	const events = lines.map((l) => JSON.parse(l) as Record<string, unknown>);
 	const header = events[0] as Record<string, unknown>;
@@ -116,9 +114,7 @@ export async function readSession(
 			title: extractTitle(lines),
 			timestamp: new Date(header.timestamp as string).getTime(),
 			messageCount: events.filter(
-				(e) =>
-					(e as any).type === "message_start" &&
-					(e as any).message?.role === "user",
+				(e) => (e as any).type === "message_start" && (e as any).message?.role === "user",
 			).length,
 		},
 		events,
@@ -134,6 +130,6 @@ export async function deleteSession(id: string): Promise<void> {
 	const entries = await readDir(dir);
 	const match = entries.find((e) => e.name?.includes(id));
 	if (match?.name) {
-		await remove(join(dir, match.name));
+		await remove(await join(dir, match.name));
 	}
 }
