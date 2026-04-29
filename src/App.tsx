@@ -16,6 +16,20 @@ import { TasksView } from "@/tasks/TasksView";
 import type { ChatMessage } from "@/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/**
+ * Hook that returns a stable function reference that always calls the latest version
+ * of the given callback. This is the "latest ref" pattern — it lets us subscribe to
+ * events (keydown, stream completion) with a stable effect, while always reading
+ * the current closure values.
+ *
+ * Equivalent to React 19's useEffectEvent, but compatible with older versions.
+ */
+function useLatest<T extends (...args: never[]) => unknown>(callback: T): T {
+	const ref = useRef(callback);
+	ref.current = callback;
+	return useCallback(((...args: Parameters<T>) => ref.current(...args)) as T, []);
+}
+
 function App() {
 	const { status, loading: statusLoading, refetch } = usePiStatus();
 	const { state: streamState, startStream, abortStream, dispatch: streamDispatch } = usePiStream();
@@ -34,7 +48,7 @@ function App() {
 	// Persistent chat history that survives stream resets
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
-	// Ref to access chatHistory in effects without adding it as a dependency
+	// Refs for accessing latest values in effects without adding deps
 	const chatHistoryRef = useRef<ChatMessage[]>(chatHistory);
 	chatHistoryRef.current = chatHistory;
 
@@ -44,6 +58,24 @@ function App() {
 	// Use a ref for session ID to avoid React state timing issues
 	const currentSessionIdRef = useRef<string | null>(null);
 
+	// Stable callback refs for effect subscriptions
+	const stableSaveSessionToDisk = useLatest(
+		useCallback(
+			(messages: ChatMessage[]) => {
+				const sessionId = currentSessionIdRef.current;
+				if (!sessionId || messages.length === 0) return;
+
+				const events = chatMessagesToEvents(sessionId, messages);
+				writeSession(sessionId, events)
+					.then(() => {
+						refreshSessions();
+					})
+					.catch((err) => console.error("[cowork] Failed to save session:", err));
+			},
+			[refreshSessions],
+		),
+	);
+
 	// Keep ref in sync with state
 	useEffect(() => {
 		if (activeSessionId) {
@@ -51,19 +83,28 @@ function App() {
 		}
 	}, [activeSessionId]);
 
-	// Handle stream completion — merge accumulated stream messages into history
-	// biome-ignore lint/correctness/useExhaustiveDependencies: intentional — we only want this to fire on isRunning transitions, accessing streamState.messages at that point is correct
+	// Handle stream completion — merge accumulated stream messages into history.
+	// Refs provide latest values without re-subscribing the effect.
+	const streamStateRef = useRef(streamState);
+	streamStateRef.current = streamState;
+
+	// We need isRunning as a separate reactive value to trigger the effect
+	// on transitions, while reading all other state from refs.
+	const isRunning = streamState.isRunning;
+
 	useEffect(() => {
 		const wasRunning = prevIsRunningRef.current;
-		const isNowRunning = streamState.isRunning;
-		prevIsRunningRef.current = isNowRunning;
+		prevIsRunningRef.current = isRunning;
 
 		// Detect: stream just finished (transition from running → idle)
-		if (wasRunning && !isNowRunning && streamState.messages.length > 0) {
+		if (wasRunning && !isRunning) {
+			const state = streamStateRef.current;
+			if (state.messages.length === 0) return;
+
 			const history = chatHistoryRef.current;
 
 			// Find the user message that started this stream
-			const streamUserMsg = streamState.messages.find((m) => m.role === "user");
+			const streamUserMsg = state.messages.find((m) => m.role === "user");
 			const streamUserContent = streamUserMsg?.content || "";
 
 			// Find where in history this user message starts
@@ -75,40 +116,35 @@ function App() {
 				}
 			}
 
-			const finalMessages = streamState.messages.map((m) => ({ ...m, isStreaming: false }));
+			const finalMessages = state.messages.map((m) => ({ ...m, isStreaming: false }));
 
 			if (overlapStart >= 0) {
-				// Replace from overlap point onwards with new stream data
 				const newHistory = [...history.slice(0, overlapStart), ...finalMessages];
 				setChatHistory(newHistory);
-				saveSessionToDisk(newHistory);
+				stableSaveSessionToDisk(newHistory);
 			} else {
-				// No overlap — append all stream messages to history
 				const newHistory = [...history, ...finalMessages];
 				setChatHistory(newHistory);
-				saveSessionToDisk(newHistory);
+				stableSaveSessionToDisk(newHistory);
 			}
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- only trigger on isRunning change
-	}, [streamState.isRunning]);
+	}, [isRunning, stableSaveSessionToDisk]);
 
-	// Helper to save current state to disk
-	const saveSessionToDisk = useCallback(
-		(messages: ChatMessage[]) => {
-			const sessionId = currentSessionIdRef.current;
-			if (!sessionId || messages.length === 0) return;
+	// Stable handler ref for keyboard shortcuts — always calls latest version
+	const handleNewSessionRef = useLatest(function handleNewSession() {
+		// Save current session first
+		if (currentSessionIdRef.current && chatHistoryRef.current.length > 0) {
+			stableSaveSessionToDisk(chatHistoryRef.current);
+		}
 
-			const events = chatMessagesToEvents(sessionId, messages);
-			writeSession(sessionId, events)
-				.then(() => {
-					refreshSessions();
-				})
-				.catch((err) => console.error("[cowork] Failed to save session:", err));
-		},
-		[refreshSessions],
-	);
+		const id = crypto.randomUUID();
+		currentSessionIdRef.current = id;
+		createSession(id);
+		setChatHistory([]);
+		streamDispatch({ type: "RESET" });
+	});
 
-	// Keyboard shortcuts
+	// Keyboard shortcuts — registered once, handler reads latest values via stable ref
 	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
 			// CMD+B: Toggle right panel
@@ -117,15 +153,14 @@ function App() {
 				setRightPanelOpen((prev) => !prev);
 			}
 
-			// CMD+Shift+N or CMD+N: New session
+			// CMD+N: New session
 			if ((e.metaKey || e.ctrlKey) && e.key === "n") {
 				e.preventDefault();
-				handleNewSession();
+				handleNewSessionRef();
 			}
 
 			// Escape: Focus input
 			if (e.key === "Escape" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-				// Focus the message input
 				const textarea = document.querySelector(
 					"textarea[placeholder]",
 				) as HTMLTextAreaElement | null;
@@ -140,8 +175,7 @@ function App() {
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-		// biome-ignore lint/correctness/useExhaustiveDependencies: handleNewSession is stable
-	}, []);
+	}, [handleNewSessionRef]);
 
 	function handleSend(text: string) {
 		// Auto-create a session if none exists
@@ -153,23 +187,10 @@ function App() {
 		void startStream(text);
 	}
 
-	function handleNewSession() {
-		// Save current session first
-		if (currentSessionIdRef.current && chatHistoryRef.current.length > 0) {
-			saveSessionToDisk(chatHistoryRef.current);
-		}
-
-		const id = crypto.randomUUID();
-		currentSessionIdRef.current = id;
-		createSession(id);
-		setChatHistory([]);
-		streamDispatch({ type: "RESET" });
-	}
-
 	async function handleSelectSession(id: string) {
 		// Save current session first
 		if (currentSessionIdRef.current && chatHistoryRef.current.length > 0) {
-			saveSessionToDisk(chatHistoryRef.current);
+			stableSaveSessionToDisk(chatHistoryRef.current);
 		}
 
 		currentSessionIdRef.current = id;
@@ -216,7 +237,7 @@ function App() {
 				sessionsLoading={sessionsLoading}
 				status={status}
 				activeView={activeView}
-				onNewSession={handleNewSession}
+				onNewSession={handleNewSessionRef}
 				onSelectSession={handleSelectSession}
 				onDeleteSession={(id: string) => {
 					if (currentSessionIdRef.current === id) {

@@ -52,7 +52,15 @@ export const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(
 
 		return (
 			<form onSubmit={handleSubmit} className="p-4">
-				<div className="rounded-2xl border bg-card shadow-sm focus-within:ring-1 focus-within:ring-primary/30">
+				<div
+					className="rounded-2xl border shadow-sm transition-all focus-within:ring-1"
+					style={{
+						background: "hsl(var(--card))",
+						borderColor: "hsl(var(--border))",
+						// @ts-expect-error CSS custom property
+						"--ring-color": "hsl(var(--primary) / 0.3)",
+					}}
+				>
 					<textarea
 						ref={textareaRef}
 						value={text}
@@ -64,11 +72,17 @@ export const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(
 						className="w-full resize-none rounded-t-2xl bg-transparent px-4 pt-3 pb-2 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
 					/>
 					<div className="flex items-center justify-between px-3 pb-3">
-						<span className="text-xs text-muted-foreground/60">{modelLabel || "Pi"}</span>
+						<span className="text-xs" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+							{modelLabel || "Pi"}
+						</span>
 						<button
 							type="submit"
 							disabled={disabled || !text.trim()}
-							className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+							className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+							style={{
+								background: "hsl(var(--primary))",
+								color: "hsl(var(--primary-foreground))",
+							}}
 						>
 							Send →
 						</button>

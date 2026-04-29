@@ -1,4 +1,5 @@
 import type { StreamState } from "@/hooks/usePiStream";
+import type { ToolCallInfo } from "@/types";
 import { AlertCircle, Check, Loader2, Terminal, X } from "lucide-react";
 
 interface RightPanelProps {
@@ -11,39 +12,67 @@ export function RightPanel({ streamState, onClose }: RightPanelProps) {
 	const hasTools = toolCalls.length > 0;
 
 	return (
-		<div className="w-[280px] flex flex-col gap-4 p-4 border-l bg-sidebar overflow-y-auto shrink-0">
+		<div
+			className="w-[280px] flex flex-col gap-4 p-4 border-l overflow-y-auto shrink-0"
+			style={{
+				background: "hsl(var(--sidebar-background))",
+				borderColor: "hsl(var(--sidebar-border))",
+			}}
+		>
 			<div className="flex items-center justify-between">
-				<h3 className="text-sm font-semibold text-foreground">Context</h3>
+				<h3 className="text-sm font-semibold" style={{ color: "hsl(var(--sidebar-foreground))" }}>
+					Context
+				</h3>
 				<button
 					type="button"
 					onClick={onClose}
-					className="p-1 rounded hover:bg-sidebar-accent transition-colors"
+					className="p-1 rounded transition-colors hover:bg-accent"
+					style={{ color: "hsl(var(--muted-foreground))" }}
 					aria-label="Close panel"
 				>
-					<X className="w-4 h-4 text-muted-foreground" />
+					<X className="w-4 h-4" />
 				</button>
 			</div>
 
 			{/* Status */}
-			<div className="rounded-xl border bg-card p-4">
-				<h3 className="text-sm font-semibold text-foreground mb-3">Status</h3>
+			<div
+				className="rounded-xl border p-4"
+				style={{
+					background: "hsl(var(--card))",
+					borderColor: "hsl(var(--border))",
+				}}
+			>
+				<h3 className="text-sm font-semibold mb-3" style={{ color: "hsl(var(--card-foreground))" }}>
+					Status
+				</h3>
 				<div className="flex items-center gap-2">
 					{streamState.isRunning ? (
 						<>
-							<Loader2 className="w-4 h-4 animate-spin text-primary" />
-							<span className="text-xs text-muted-foreground capitalize">
+							<Loader2
+								className="w-4 h-4 animate-spin"
+								style={{ color: "hsl(var(--status-active-fg))" }}
+							/>
+							<span
+								className="text-xs capitalize"
+								style={{ color: "hsl(var(--muted-foreground))" }}
+							>
 								{streamState.status.replace("_", " ")}
 							</span>
 						</>
 					) : (
 						<>
-							<Check className="w-4 h-4 text-emerald-500" />
-							<span className="text-xs text-muted-foreground">Idle</span>
+							<Check className="w-4 h-4" style={{ color: "hsl(var(--success))" }} />
+							<span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+								Idle
+							</span>
 						</>
 					)}
 				</div>
 				{streamState.streamingMessage?.model && (
-					<p className="text-[10px] text-muted-foreground mt-2">
+					<p
+						className="text-[10px] mt-2 font-mono"
+						style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}
+					>
 						{streamState.streamingMessage.provider}/{streamState.streamingMessage.model}
 					</p>
 				)}
@@ -51,39 +80,22 @@ export function RightPanel({ streamState, onClose }: RightPanelProps) {
 
 			{/* Tool calls */}
 			{hasTools && (
-				<div className="rounded-xl border bg-card p-4">
-					<h3 className="text-sm font-semibold text-foreground mb-3">
+				<div
+					className="rounded-xl border p-4"
+					style={{
+						background: "hsl(var(--card))",
+						borderColor: "hsl(var(--border))",
+					}}
+				>
+					<h3
+						className="text-sm font-semibold mb-3"
+						style={{ color: "hsl(var(--card-foreground))" }}
+					>
 						Tool Calls ({toolCalls.length})
 					</h3>
 					<div className="space-y-2">
 						{toolCalls.map((tc) => (
-							<div
-								key={tc.id}
-								className={`rounded-lg border p-2 ${
-									tc.status === "running"
-										? "bg-primary/5 border-primary/20"
-										: tc.status === "error"
-											? "bg-destructive/5 border-destructive/20"
-											: "bg-emerald-500/5 border-emerald-500/20"
-								}`}
-							>
-								<div className="flex items-center gap-2">
-									{tc.status === "running" ? (
-										<Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-									) : tc.status === "error" ? (
-										<AlertCircle className="w-3.5 h-3.5 text-destructive" />
-									) : (
-										<Check className="w-3.5 h-3.5 text-emerald-500" />
-									)}
-									<Terminal className="w-3.5 h-3.5 text-muted-foreground" />
-									<span className="text-xs font-medium text-foreground flex-1">{tc.name}</span>
-								</div>
-								{tc.result && (
-									<pre className="mt-1 text-[10px] text-muted-foreground bg-muted/50 rounded p-1.5 overflow-x-auto whitespace-pre-wrap">
-										{tc.result}
-									</pre>
-								)}
-							</div>
+							<ToolCard key={tc.id} toolCall={tc} />
 						))}
 					</div>
 				</div>
@@ -91,15 +103,76 @@ export function RightPanel({ streamState, onClose }: RightPanelProps) {
 
 			{/* Usage */}
 			{streamState.messages.length > 0 && (
-				<div className="rounded-xl border bg-card p-4">
-					<h3 className="text-sm font-semibold text-foreground mb-3">Session</h3>
-					<div className="space-y-1 text-xs text-muted-foreground">
+				<div
+					className="rounded-xl border p-4"
+					style={{
+						background: "hsl(var(--card))",
+						borderColor: "hsl(var(--border))",
+					}}
+				>
+					<h3
+						className="text-sm font-semibold mb-3"
+						style={{ color: "hsl(var(--card-foreground))" }}
+					>
+						Session
+					</h3>
+					<div className="space-y-1 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
 						<div className="flex justify-between">
 							<span>Messages</span>
-							<span className="text-foreground">{streamState.messages.length}</span>
+							<span style={{ color: "hsl(var(--foreground))" }}>{streamState.messages.length}</span>
 						</div>
 					</div>
 				</div>
+			)}
+		</div>
+	);
+}
+
+function ToolCard({ toolCall }: { toolCall: ToolCallInfo }) {
+	return (
+		<div
+			className="rounded-lg border p-2"
+			style={{
+				background:
+					toolCall.status === "running"
+						? "hsl(var(--tool-running-bg))"
+						: toolCall.status === "error"
+							? "hsl(var(--tool-error-bg))"
+							: "hsl(var(--tool-complete-bg))",
+				borderColor:
+					toolCall.status === "running"
+						? "hsl(var(--tool-running-border))"
+						: toolCall.status === "error"
+							? "hsl(var(--tool-error-border))"
+							: "hsl(var(--tool-complete-border))",
+			}}
+		>
+			<div className="flex items-center gap-2">
+				{toolCall.status === "running" ? (
+					<Loader2
+						className="w-3.5 h-3.5 animate-spin"
+						style={{ color: "hsl(var(--tool-running-fg))" }}
+					/>
+				) : toolCall.status === "error" ? (
+					<AlertCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--tool-error-fg))" }} />
+				) : (
+					<Check className="w-3.5 h-3.5" style={{ color: "hsl(var(--tool-complete-fg))" }} />
+				)}
+				<Terminal className="w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+				<span className="text-xs font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
+					{toolCall.name}
+				</span>
+			</div>
+			{toolCall.result && (
+				<pre
+					className="mt-1 text-[10px] rounded p-1.5 overflow-x-auto whitespace-pre-wrap"
+					style={{
+						background: "hsl(var(--muted) / 0.5)",
+						color: "hsl(var(--muted-foreground))",
+					}}
+				>
+					{toolCall.result}
+				</pre>
 			)}
 		</div>
 	);
