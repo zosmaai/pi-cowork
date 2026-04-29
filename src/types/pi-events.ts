@@ -161,10 +161,22 @@ export type AssistantMessageEvent =
 export type PiMessageContent =
 	| { type: "text"; text: string }
 	| { type: "thinking"; thinking: string; thinkingSignature?: string }
-	| { type: "tool_use"; toolCall: PiToolCall }
+	| { type: "toolCall"; id: string; name: string; arguments: Record<string, unknown>; partialArgs?: string; streamIndex?: number }
+	| { type: "tool_use"; toolCall: PiToolCall } // legacy
 	| { type: "image"; source: { type: string; mediaType: string; data: string } };
 
+// Actual format from pi --mode json toolcall_end events
 export interface PiToolCall {
+	type: "toolCall";
+	id: string;
+	name: string;
+	arguments: Record<string, unknown>;
+	partialArgs?: string;
+	streamIndex?: number;
+}
+
+// Legacy format (Anthropic-style) — not emitted by pi but kept for compat
+export interface PiToolCallLegacy {
 	id: string;
 	type: "function";
 	function: {
@@ -174,12 +186,14 @@ export interface PiToolCall {
 }
 
 export interface PiAgentMessage {
-	role: "user" | "assistant" | "system" | "tool";
+	role: "user" | "assistant" | "system" | "tool" | "custom" | "toolResult";
 	content: PiMessageContent[];
 	timestamp?: number;
 	api?: string;
 	provider?: string;
 	model?: string;
+	customType?: string;
+	display?: boolean;
 	usage?: {
 		input: number;
 		output: number;
@@ -196,10 +210,17 @@ export interface PiAgentMessage {
 	};
 	stopReason?: string;
 	responseId?: string;
+	toolCallId?: string;
+	toolName?: string;
+	isError?: boolean;
 }
 
 export interface PiToolResultMessage {
-	role: "tool";
-	tool_call_id: string;
+	role: "toolResult";
+	toolCallId: string;
+	toolName?: string;
 	content: Array<{ type: string; text: string }>;
+	details?: Record<string, unknown>;
+	isError?: boolean;
+	timestamp?: number;
 }

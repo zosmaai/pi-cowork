@@ -145,7 +145,7 @@ describe("streamReducer", () => {
 		expect(state.messages[1].isStreaming).toBe(false);
 	});
 
-	it("ABORT_STREAM clears running state", () => {
+	it("ABORT_STREAM saves partial content when present", () => {
 		let state = streamReducer(INITIAL_STATE, {
 			type: "START_STREAM",
 			prompt: "Hi",
@@ -155,6 +155,23 @@ describe("streamReducer", () => {
 
 		expect(state.isRunning).toBe(false);
 		expect(state.status).toBe("idle");
+		// Partial content should be saved to messages
+		expect(state.messages).toHaveLength(2);
+		expect(state.messages[1].content).toBe("Partial...");
+		expect(state.messages[1].isStreaming).toBe(false);
+	});
+
+	it("ABORT_STREAM without content just clears running state", () => {
+		let state = streamReducer(INITIAL_STATE, {
+			type: "START_STREAM",
+			prompt: "Hi",
+		});
+		state = streamReducer(state, { type: "ABORT_STREAM" });
+
+		expect(state.isRunning).toBe(false);
+		expect(state.status).toBe("idle");
+		// No assistant message should be added (empty content)
+		expect(state.messages).toHaveLength(1);
 	});
 
 	it("STREAM_ERROR sets error and stops", () => {
@@ -180,6 +197,52 @@ describe("streamReducer", () => {
 		state = streamReducer(state, { type: "RESET" });
 
 		expect(state).toEqual(INITIAL_STATE);
+	});
+
+	it("NEW_ASSISTANT_MESSAGE finalizes current streaming message and starts fresh", () => {
+		let state = streamReducer(INITIAL_STATE, {
+			type: "START_STREAM",
+			prompt: "Hi",
+		});
+		state = streamReducer(state, { type: "TEXT_DELTA", delta: "First response" });
+		state = streamReducer(state, { type: "NEW_ASSISTANT_MESSAGE" });
+
+		// Previous message should be finalized in messages
+		expect(state.messages).toHaveLength(2); // user + first assistant
+		expect(state.messages[1].content).toBe("First response");
+		expect(state.messages[1].isStreaming).toBe(false);
+
+		// New streaming message should be empty and streaming
+		expect(state.streamingMessage).not.toBeNull();
+		expect(state.streamingMessage?.content).toBe("");
+		expect(state.streamingMessage?.isStreaming).toBe(true);
+
+		// Second turn text should append to new streaming message
+		state = streamReducer(state, { type: "TEXT_DELTA", delta: "Second response" });
+		expect(state.streamingMessage?.content).toBe("Second response");
+
+		// STREAM_COMPLETE should add second message
+		state = streamReducer(state, { type: "STREAM_COMPLETE" });
+		expect(state.messages).toHaveLength(3); // user + 2 assistants
+		expect(state.messages[2].content).toBe("Second response");
+	});
+
+	it("TOOL_CALL_START deduplicates by id", () => {
+		const tc: ToolCallInfo = {
+			id: "tc1",
+			name: "bash",
+			args: { command: "ls" },
+			status: "running",
+		};
+
+		let state = streamReducer(INITIAL_STATE, {
+			type: "START_STREAM",
+			prompt: "X",
+		});
+		state = streamReducer(state, { type: "TOOL_CALL_START", toolCall: tc });
+		state = streamReducer(state, { type: "TOOL_CALL_START", toolCall: tc }); // duplicate
+
+		expect(state.streamingMessage?.toolCalls).toHaveLength(1); // not 2
 	});
 
 	it("ignores unknown actions", () => {

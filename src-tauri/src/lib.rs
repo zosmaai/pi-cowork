@@ -122,11 +122,27 @@ async fn run_pi_stream(
         .take()
         .ok_or_else(|| "Failed to capture stdout".to_string())?;
 
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or_else(|| "Failed to capture stderr".to_string())?;
+
     // Store the child so it can be aborted
     {
         let mut guard = state.running_child.lock().await;
         *guard = Some(child);
     }
+
+    // Drain stderr in a background task to prevent pipe buffer deadlock.
+    // If stderr fills its pipe buffer (64KB on Linux), the pi process
+    // would block on write, causing a deadlock since we're also reading stdout.
+    let stderr_reader = BufReader::new(stderr);
+    let stderr_handle = tokio::spawn(async move {
+        let mut stderr_lines = stderr_reader.lines();
+        while let Ok(Some(line)) = stderr_lines.next_line().await {
+            eprintln!("[cowork] pi stderr: {}", line);
+        }
+    });
 
     let reader = BufReader::new(stdout);
     let mut lines = reader.lines();
@@ -176,6 +192,9 @@ async fn run_pi_stream(
             }
         }
     }
+
+    // Ensure stderr drain task completes
+    let _ = stderr_handle.await;
 
     let _ = channel.send(PiEvent {
         data: serde_json::json!({ "type": "done" }),
