@@ -161,7 +161,14 @@ export type AssistantMessageEvent =
 export type PiMessageContent =
 	| { type: "text"; text: string }
 	| { type: "thinking"; thinking: string; thinkingSignature?: string }
-	| { type: "toolCall"; id: string; name: string; arguments: Record<string, unknown>; partialArgs?: string; streamIndex?: number }
+	| {
+			type: "toolCall";
+			id: string;
+			name: string;
+			arguments: Record<string, unknown>;
+			partialArgs?: string;
+			streamIndex?: number;
+	  }
 	| { type: "tool_use"; toolCall: PiToolCall } // legacy
 	| { type: "image"; source: { type: string; mediaType: string; data: string } };
 
