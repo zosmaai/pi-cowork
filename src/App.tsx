@@ -111,13 +111,36 @@ function App() {
 	// Keyboard shortcuts
 	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
+			// CMD+B: Toggle right panel
 			if ((e.metaKey || e.ctrlKey) && e.key === "b") {
 				e.preventDefault();
 				setRightPanelOpen((prev) => !prev);
 			}
+
+			// CMD+Shift+N or CMD+N: New session
+			if ((e.metaKey || e.ctrlKey) && e.key === "n") {
+				e.preventDefault();
+				handleNewSession();
+			}
+
+			// Escape: Focus input
+			if (e.key === "Escape" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+				// Focus the message input
+				const textarea = document.querySelector(
+					"textarea[placeholder]",
+				) as HTMLTextAreaElement | null;
+				textarea?.focus();
+			}
+
+			// CMD+K: Reserved for command palette (future)
+			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+				e.preventDefault();
+				// TODO: Open command palette
+			}
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
+		// biome-ignore lint/correctness/useExhaustiveDependencies: handleNewSession is stable
 	}, []);
 
 	function handleSend(text: string) {
