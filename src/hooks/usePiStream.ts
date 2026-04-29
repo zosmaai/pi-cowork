@@ -30,7 +30,7 @@ export type StreamAction =
 			status: "running" | "completed" | "error";
 			isError?: boolean;
 	  }
-	| { type: "NEW_ASSISTANT_MESSAGE" }
+	| { type: "TURN_RESET" }
 	| { type: "STREAM_COMPLETE" }
 	| { type: "STREAM_ERROR"; error: string }
 	| { type: "ABORT_STREAM" }
@@ -71,22 +71,36 @@ export function streamReducer(state: StreamState, action: StreamAction): StreamS
 				},
 			};
 
-		case "NEW_ASSISTANT_MESSAGE":
-			// Finalize current streaming message and start a new one for multi-turn
-			if (!state.streamingMessage) return state;
+		/**
+		 * TURN_RESET — accumulates into the SAME assistant message.
+		 *
+		 * When pi starts a new assistant message in its agentic loop (e.g. after
+		 * receiving a tool result), we DON'T create a new message. Instead we
+		 * keep the same streaming message, preserve all accumulated tool calls,
+		 * and reset content/thinking so the next turn's output overwrites.
+		 *
+		 * This gives a single "Pi" message per user prompt, with all tool calls
+		 * shown as a timeline within it — exactly like the pi TUI.
+		 */
+		case "TURN_RESET": {
+			const msg = state.streamingMessage;
+			if (!msg) return state;
 			return {
 				...state,
-				messages: [...state.messages, { ...state.streamingMessage, isStreaming: false }],
 				streamingMessage: {
-					id: crypto.randomUUID(),
-					role: "assistant",
+					...msg,
+					// Reset content: previous turn's text was typically empty
+					// (model called a tool) or just working text. The final
+					// turn will have the real response.
 					content: "",
 					thinking: "",
+					// Keep accumulated tool calls across all turns
+					toolCalls: msg.toolCalls || [],
 					isStreaming: true,
-					toolCalls: [],
-					timestamp: Date.now(),
 				},
+				status: "thinking",
 			};
+		}
 
 		case "TEXT_DELTA": {
 			const msg = state.streamingMessage;
@@ -186,9 +200,14 @@ export function streamReducer(state: StreamState, action: StreamAction): StreamS
 			};
 
 		case "ABORT_STREAM": {
-			// Save partial content if any
+			// Save partial message if it has meaningful content
 			const current = state.streamingMessage;
-			if (current?.content) {
+			const hasContent =
+				current &&
+				(current.content ||
+					current.thinking ||
+					(current.toolCalls && current.toolCalls.length > 0));
+			if (hasContent) {
 				return {
 					...state,
 					isRunning: false,
@@ -325,11 +344,13 @@ export function usePiStream() {
 					}
 
 					case "message_start": {
+						// When a new assistant message starts mid-stream (agentic turn),
+						// reset content/thinking but KEEP accumulated tool calls in the
+						// same message — this gives a single Pi message per user prompt
+						// with all tool calls shown as a timeline within it.
 						const msg = event.message;
-						// When a new assistant message starts mid-stream (multi-turn),
-						// finalize the current streaming message and start fresh
 						if (msg?.role === "assistant" && streamingRef.current) {
-							dispatch({ type: "NEW_ASSISTANT_MESSAGE" });
+							dispatch({ type: "TURN_RESET" });
 						}
 						break;
 					}

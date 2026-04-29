@@ -199,32 +199,55 @@ describe("streamReducer", () => {
 		expect(state).toEqual(INITIAL_STATE);
 	});
 
-	it("NEW_ASSISTANT_MESSAGE finalizes current streaming message and starts fresh", () => {
+	it("TURN_RESET keeps same message, preserves tool calls, resets content/thinking", () => {
+		const tc: ToolCallInfo = {
+			id: "tc1",
+			name: "bash",
+			args: { command: "ls" },
+			status: "completed",
+		};
+
 		let state = streamReducer(INITIAL_STATE, {
 			type: "START_STREAM",
 			prompt: "Hi",
 		});
+
+		// Accumulate tool calls and text
+		state = streamReducer(state, { type: "TOOL_CALL_START", toolCall: tc });
 		state = streamReducer(state, { type: "TEXT_DELTA", delta: "First response" });
-		state = streamReducer(state, { type: "NEW_ASSISTANT_MESSAGE" });
+		state = streamReducer(state, { type: "THINKING_DELTA", delta: "Some thinking" });
 
-		// Previous message should be finalized in messages
-		expect(state.messages).toHaveLength(2); // user + first assistant
-		expect(state.messages[1].content).toBe("First response");
-		expect(state.messages[1].isStreaming).toBe(false);
+		// Verify state before reset
+		expect(state.streamingMessage?.toolCalls).toHaveLength(1);
+		expect(state.streamingMessage?.content).toBe("First response");
+		expect(state.streamingMessage?.thinking).toBe("Some thinking");
 
-		// New streaming message should be empty and streaming
-		expect(state.streamingMessage).not.toBeNull();
+		// Turn reset — same message, tool calls preserved, content/thinking cleared
+		state = streamReducer(state, { type: "TURN_RESET" });
+
+		// Tool calls PRESERVED across turns
+		expect(state.streamingMessage?.toolCalls).toHaveLength(1);
+		expect(state.streamingMessage?.toolCalls?.[0].name).toBe("bash");
+
+		// Content and thinking RESET for new turn
 		expect(state.streamingMessage?.content).toBe("");
+		expect(state.streamingMessage?.thinking).toBe("");
+
+		// Still streaming
 		expect(state.streamingMessage?.isStreaming).toBe(true);
+		expect(state.status).toBe("thinking");
 
-		// Second turn text should append to new streaming message
-		state = streamReducer(state, { type: "TEXT_DELTA", delta: "Second response" });
-		expect(state.streamingMessage?.content).toBe("Second response");
+		// Can accumulate new turn content
+		state = streamReducer(state, { type: "TEXT_DELTA", delta: "Final response" });
+		expect(state.streamingMessage?.content).toBe("Final response");
+		// Tool calls still preserved
+		expect(state.streamingMessage?.toolCalls).toHaveLength(1);
 
-		// STREAM_COMPLETE should add second message
+		// STREAM_COMPLETE produces a SINGLE assistant message
 		state = streamReducer(state, { type: "STREAM_COMPLETE" });
-		expect(state.messages).toHaveLength(3); // user + 2 assistants
-		expect(state.messages[2].content).toBe("Second response");
+		expect(state.messages).toHaveLength(2); // user + 1 assistant
+		expect(state.messages[1].content).toBe("Final response");
+		expect(state.messages[1].toolCalls).toHaveLength(1); // tool calls carried over
 	});
 
 	it("TOOL_CALL_START deduplicates by id", () => {
