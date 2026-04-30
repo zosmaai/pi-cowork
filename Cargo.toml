@@ -13,7 +13,11 @@ resolver = "2"
 
 [workspace.package]
 edition = "2021"
-rust-version = "1.77.2"
+# Bumped from 1.77.2 to 1.85 in Phase B because pi_agent_rust (the SDK
+# the metaagents engine wraps) declares rust-version = "1.85". Cargo's
+# MSRV-aware resolver requires our workspace MSRV to meet or exceed all
+# transitive deps.
+rust-version = "1.85"
 license = "MIT"
 repository = "https://github.com/zosmaai/pi-cowork"
 

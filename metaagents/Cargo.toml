@@ -20,8 +20,18 @@ log = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 
-# pi_agent_rust SDK is added in Phase B (next branch).
-# Phase A only sets up the workspace skeleton.
+# pi_agent_rust SDK — the agent runtime this engine wraps.
+#
+# - Pinned to an exact version (`=`) per the upgrade plan's reproducibility
+#   guarantee. Bump deliberately, with a smoke test rerun.
+# - `default-features = false` skips heavy TUI-only features
+#   (wasm-host, jemalloc, image-resize, clipboard, sqlite-sessions).
+#   We only need the SDK + extension dispatch + provider machinery, all of
+#   which live in always-on modules. We can opt features back in if the
+#   smoke test or downstream consumers require them.
+#
+# Library crate name is `pi`; import paths use `pi::sdk::*`.
+pi_agent_rust = { version = "=0.1.13", default-features = false }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
