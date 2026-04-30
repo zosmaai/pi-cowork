@@ -274,8 +274,15 @@ export function usePiStream() {
 	const streamingRef = useRef(state.streamingMessage);
 	streamingRef.current = state.streamingMessage;
 
-	const startStream = useCallback(async (prompt: string) => {
+	const startStream = useCallback(async (prompt: string, sessionId?: string) => {
 		dispatch({ type: "START_STREAM", prompt });
+
+		// Lazily create a session if one isn't provided.
+		let sid = sessionId;
+		if (!sid) {
+			sid = crypto.randomUUID();
+			await invoke("create_session", { sessionId: sid });
+		}
 
 		const channel = new Channel<PiEvent>();
 
@@ -422,8 +429,9 @@ export function usePiStream() {
 		};
 
 		try {
-			await invoke("run_pi_stream", {
-				args: [prompt],
+			await invoke("send_prompt", {
+				sessionId: sid,
+				prompt,
 				channel,
 			});
 		} catch (err) {
@@ -434,12 +442,14 @@ export function usePiStream() {
 		}
 	}, []);
 
-	const abortStream = useCallback(async () => {
+	const abortStream = useCallback(async (sessionId?: string) => {
 		dispatch({ type: "ABORT_STREAM" });
-		try {
-			await invoke<boolean>("abort_pi");
-		} catch {
-			// ignore
+		if (sessionId) {
+			try {
+				await invoke<boolean>("abort_session", { sessionId });
+			} catch {
+				// ignore
+			}
 		}
 	}, []);
 

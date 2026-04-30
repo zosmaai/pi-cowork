@@ -25,4 +25,40 @@ export interface ToolCallInfo {
 	isError?: boolean;
 }
 
+// Extension info from the metaagents engine
+export interface ExtensionInfo {
+	id: string;
+	name: string;
+	version: string;
+	description: string;
+	enabled: boolean;
+	source: "local" | "npm" | "localPath";
+}
+
+// Provider info from pi's models.json
+export interface ProviderInfo {
+	id: string;
+	name: string;
+	api: string;
+	modelCount: number;
+}
+
+// Model info from pi's models.json
+export interface ModelInfo {
+	id: string;
+	name: string;
+	provider: string;
+	reasoning: boolean;
+	contextWindow: number;
+	maxTokens: number;
+}
+
+// Config snapshot from the engine
+export interface ConfigPayload {
+	defaultProvider: string | null;
+	defaultModel: string | null;
+	providers: ProviderInfo[];
+	models: ModelInfo[];
+}
+
 export * from "./pi-events";

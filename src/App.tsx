@@ -184,7 +184,7 @@ function App() {
 			currentSessionIdRef.current = id;
 			createSession(id);
 		}
-		void startStream(text);
+		void startStream(text, currentSessionIdRef.current);
 	}
 
 	async function handleSelectSession(id: string) {
