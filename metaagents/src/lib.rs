@@ -7,11 +7,14 @@
 //! products (Zosma Code) can build on without coupling to the underlying pi
 //! SDK shape.
 //!
-//! ## Phase B status
+//! ## Phase C status — Complete
 //!
-//! Phase A scaffolded the workspace. Phase B wires the [`pi_agent_rust`]
-//! dependency in and ships a smoke test proving end-to-end linkage. The
-//! engine API (sessions, events, config, extensions) lands in Phase C.
+//! The engine layer is fully implemented:
+//! - **[[events]]** — `CoworkEvent` enum matching frontend PiEvent taxonomy
+//! - **[[session]]** — `Session` wrapper around `AgentSessionHandle` with event bridging
+//! - **[[engine]]** — `MetaAgentsEngine` managing session lifecycle (create/get/drop)
+//! - **[[config]]** — Read pi settings and model registry from disk
+//! - **[[extensions]]** — Discover extensions from local dirs and settings packages
 //!
 //! ## Re-exports
 //!
@@ -22,9 +25,9 @@
 //!
 //! ## Roadmap
 //!
-//! - **Phase C** — flesh out `engine`, `session`, `config`, `extensions`,
-//!   and `events` modules so the Tauri shell can drop its subprocess code.
 //! - **Phase D** — Tauri backend migrates to call into this crate.
+//! - **Phase E** — Frontend updates (use new commands, extensions/models UI).
+//! - **Phase F** — Polish & rebrand prep.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -36,6 +39,21 @@
 /// name so downstream crates write `use metaagents::pi::sdk::*;` — keeping
 /// the convention used by every example in the upstream docs.
 pub use ::pi;
+
+/// Stable event types matching the frontend PiEvent taxonomy.
+pub mod events;
+
+/// Session management wrapping the SDK AgentSessionHandle.
+pub mod session;
+
+/// MetaAgents engine — manages multiple sessions with lifecycle control.
+pub mod engine;
+
+/// Configuration reader for pi settings and model registry.
+pub mod config;
+
+/// Extension discovery from pi's extension directories.
+pub mod extensions;
 
 /// Crate version, exposed for diagnostic surfaces (e.g. About dialog).
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
