@@ -6,19 +6,21 @@
 [![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Une interface graphique de bureau pour l'[agent de codage pi](https://github.com/badlogic/pi-mono) — streaming, processus de pensée, appels d'outils et pilotage, le tout dans une belle application native.
+> Un collaborateur IA de bureau propulsé par le [SDK pi agent](https://github.com/Dicklesworthstone/pi_agent_rust) — streaming, processus de pensée, appels d'outils, sessions multi-tours et pilotage, le tout dans une belle application native.
 
 ![pi-cowork-capture](./assets/screenshot.png)
 
 ## Fonctionnalités
 
-- **Réponses en streaming** — Observez pi penser, écrire et appeler des outils en temps réel
+- **Exécution de l'agent en processus** — Le SDK pi agent s'exécute directement dans l'application (pas de sous-processus, pas de dépendance CLI à l'exécution)
+- **Sessions multi-tours** — Continuité de conversation complète avec historique de session persistant
+- **Réponses en streaming** — Observez l'agent penser, écrire et appeler des outils en temps réel
 - **Blocs de pensée** — Raisonnement extensible du modèle
-- **Cartes d'exécution d'outils** — Appels bash/edit/write en direct avec arguments et résultats
-- **Gestion de sessions** — Sessions de chat persistantes avec horodatages
+- **Timeline des appels d'outils** — Appels bash/edit/write en direct avec arguments et résultats
+- **Gestion de sessions** — Sessions de chat persistantes sauvegardées dans `~/.pi/cowork/`
 - **Mode clair & sombre** — Mode clair crème chaude et mode sombre charbon chaud
 - **Raccourcis clavier** — `Cmd/Ctrl+Shift+K` pour focus, `Cmd/Ctrl+N` pour nouvelle session
-- **Arrêter & réessayer** — Arrêtez un agent en cours, réessayez en cas d'erreur
+- **Arrêter & piloter** — Arrêter un agent en cours en milieu de tour, envoyer des messages de pilotage
 - **UI inspirée de Claude** — Layout à 3 colonnes avec barre latérale, espace de travail et panneau d'info
 
 ## Stack Technique
@@ -26,18 +28,21 @@
 | Couche | Technologie |
 |--------|------------|
 | Frontend | React 19, Tailwind CSS v4, Radix UI |
-| Backend | Tauri v2, Rust, Tokio |
-| Tests | Vitest, Testing Library, jsdom |
-| Linter | Biome |
-| Shell | pi coding agent (`@mariozechner/pi-coding-agent`) |
+| Shell desktop | Tauri v2, Rust, Tokio |
+| Moteur agent | [metaagents](./metaagents/) — wrapper Rust du SDK `pi_agent_rust` |
+| SDK agent | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — runtime en processus avec extensions QuickJS |
+| Tests | Vitest, Testing Library, jsdom, `cargo test` |
+| Linter | Biome (frontend), Clippy (Rust) |
 
 ## Démarrage Rapide
 
 ### Prérequis
 
 - [Node.js](https://nodejs.org/) 22+
-- [Rust](https://rustup.rs/)
-- pi coding agent: `npm install -g @mariozechner/pi-coding-agent`
+- [Rust](https://rustup.rs/) 1.85+
+- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — installer une fois pour la configuration initiale : `npm install -g @mariozechner/pi-coding-agent`, puis exécuter `pi` une fois pour générer `~/.pi/agent/settings.json` et `~/.pi/agent/models.json`
+
+> **Note :** Le CLI pi n'est nécessaire que pour la configuration initiale. L'application utilise le SDK `pi_agent_rust` directement à l'exécution — aucun sous-processus ni appel CLI pendant le fonctionnement normal.
 
 ### Installer & Exécuter
 
@@ -48,9 +53,18 @@ npm install
 # Lancer le serveur de développement frontend
 npm run dev:frontend
 
-# Exécuter l'application Tauri complète (frontend + backend Rust)
+# Exécuter l'application Tauri complète (frontend + backend Rust + moteur metaagents)
 npm run dev
 ```
+
+## Configuration et données
+
+| Quoi | Emplacement | Notes |
+|-----|-------------|-------|
+| Fournisseurs LLM et clés API | `~/.pi/agent/settings.json` | Créé par `pi` au premier lancement |
+| Définitions des modèles | `~/.pi/agent/models.json` | Créé par `pi` au premier lancement |
+| Extensions et compétences | `~/.pi/agent/extensions/` | Installées via `pi install` |
+| Historique des sessions | `~/.pi/cowork/` | Géré par pi-cowork |
 
 ## Licence
 

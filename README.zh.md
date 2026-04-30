@@ -6,19 +6,21 @@
 [![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> [pi coding agent](https://github.com/badlogic/pi-mono) 的桌面 GUI — 实时流式传输、思维过程、工具调用和引导，全部集成在一个精美的原生应用中。
+> 由 [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) 驱动的桌面 AI 协作者 — 流式传输、思维过程、工具调用、多轮会话和引导，全部集成在一个精美的原生应用中。
 
 ![pi-cowork-截图](./assets/screenshot.png)
 
 ## 功能特性
 
-- **流式响应** — 实时观看 pi 思考、编写代码和调用工具
+- **进程内代理运行时** — pi agent SDK 直接在应用内运行（无子进程，运行时无需 CLI）
+- **多轮会话** — 完整的对话连续性，持久化会话历史
+- **流式响应** — 实时观看代理思考、编写代码和调用工具
 - **思维块** — 可展开查看模型的推理过程
-- **工具执行卡片** — 实时显示 bash/edit/write 工具调用及其参数和结果
-- **会话管理** — 带时间戳的持久聊天会话
+- **工具调用时间线** — 实时显示 bash/edit/write 工具调用及其参数和结果
+- **会话管理** — 持久化聊天会话保存至 `~/.pi/cowork/`
 - **亮色与暗色模式** — 暖色奶油亮模式和暖色炭灰暗模式
 - **键盘快捷键** — `Cmd/Ctrl+Shift+K` 聚焦输入框，`Cmd/Ctrl+N` 新建会话
-- **中止与重试** — 停止正在运行的代理，出错时重试
+- **中止与引导** — 中途停止运行中的代理，发送后续引导消息
 - **Claude 风格 UI** — 三栏布局：侧边栏、工作区和信息面板
 
 ## 技术栈
@@ -26,18 +28,21 @@
 | 层级 | 技术 |
 |------|------|
 | 前端 | React 19, Tailwind CSS v4, Radix UI |
-| 后端 | Tauri v2, Rust, Tokio |
-| 测试 | Vitest, Testing Library, jsdom |
-| 代码规范 | Biome |
-| 命令行 | pi coding agent (`@mariozechner/pi-coding-agent`) |
+| 桌面壳 | Tauri v2, Rust, Tokio |
+| 代理引擎 | [metaagents](./metaagents/) — `pi_agent_rust` SDK 的 Rust 封装 |
+| 代理 SDK | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — 内置 QuickJS 扩展的进程内运行时 |
+| 测试 | Vitest, Testing Library, jsdom, `cargo test` |
+| 代码规范 | Biome（前端），Clippy（Rust） |
 
 ## 快速开始
 
 ### 前置条件
 
 - [Node.js](https://nodejs.org/) 22+
-- [Rust](https://rustup.rs/)
-- pi coding agent: `npm install -g @mariozechner/pi-coding-agent`
+- [Rust](https://rustup.rs/) 1.85+
+- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — 安装一次以初始化配置：`npm install -g @mariozechner/pi-coding-agent`，然后运行一次 `pi` 以生成 `~/.pi/agent/settings.json` 和 `~/.pi/agent/models.json`
+
+> **注意：** pi CLI 仅用于初始设置。应用在运行时直接使用 `pi_agent_rust` SDK，正常操作中无需子进程或 CLI 调用。
 
 ### 安装与运行
 
@@ -48,9 +53,18 @@ npm install
 # 运行前端开发服务器
 npm run dev:frontend
 
-# 运行完整 Tauri 应用（前端 + Rust 后端）
+# 运行完整 Tauri 应用（前端 + Rust 后端 + metaagents 引擎）
 npm run dev
 ```
+
+## 配置与数据
+
+| 内容 | 位置 | 说明 |
+|------|------|------|
+| LLM 提供商和 API 密钥 | `~/.pi/agent/settings.json` | 首次运行 `pi` 时创建 |
+| 模型定义 | `~/.pi/agent/models.json` | 首次运行 `pi` 时创建 |
+| 扩展和技能 | `~/.pi/agent/extensions/` | 通过 `pi install` 安装 |
+| 会话历史 | `~/.pi/cowork/` | 由 pi-cowork 管理 |
 
 ## 许可证
 

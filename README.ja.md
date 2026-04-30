@@ -6,19 +6,21 @@
 [![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> [pi coding agent](https://github.com/badlogic/pi-mono) のデスクトップ GUI — ストリーミング、思考プロセス、ツール呼び出し、ステアリングをすべて美しいネイティブアプリに統合。
+> [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) を搭載したデスクトップ AI コワーカー — ストリーミング、思考プロセス、ツール呼び出し、マルチターンセッション、ステアリングをすべて美しいネイティブアプリに統合。
 
 ![pi-cowork-スクリーンショット](./assets/screenshot.png)
 
 ## 機能
 
-- **ストリーミングレスポンス** — pi が考え、書き、ツールを呼び出すのをリアルタイムで確認
+- **インプロセスエージェントランタイム** — pi agent SDK がアプリ内で直接実行（サブプロセスなし、実行時のCLI依存なし）
+- **マルチターンセッション** — 永続的なセッション履歴による完全な会話の継続性
+- **ストリーミングレスポンス** — エージェントが考え、書き、ツールを呼び出すのをリアルタイムで確認
 - **思考ブロック** — 展開可能なモデルの推論プロセス
-- **ツール実行カード** — bash/edit/write ツール呼び出しを引数と結果付きでリアルタイム表示
-- **セッション管理** — タイムスタンプ付きの永続的なチャットセッション
+- **ツール呼び出しタイムライン** — 引数と結果付きでbash/edit/writeツール呼び出しをリアルタイム表示
+- **セッション管理** — `~/.pi/cowork/` に保存される永続的なチャットセッション
 - **ライト＆ダークモード** — 温かみのあるクリームライトモードとチャコールダークモード
 - **キーボードショートカット** — `Cmd/Ctrl+Shift+K` でフォーカス、`Cmd/Ctrl+N` で新規セッション
-- **中止と再試行** — 実行中のエージェントを停止、エラー時に再試行
+- **中止とステアリング** — ターン途中で実行中のエージェントを停止、フォローアップステアリングメッセージを送信
 - **Claude 風 UI** — サイドバー、ワークスペース、情報パネルの 3 列レイアウト
 
 ## 技術スタック
@@ -26,18 +28,21 @@
 | レイヤー | テクノロジー |
 |---------|------------|
 | フロントエンド | React 19, Tailwind CSS v4, Radix UI |
-| バックエンド | Tauri v2, Rust, Tokio |
-| テスト | Vitest, Testing Library, jsdom |
-| リンター | Biome |
-| シェル | pi coding agent (`@mariozechner/pi-coding-agent`) |
+| デスクトップシェル | Tauri v2, Rust, Tokio |
+| エージェントエンジン | [metaagents](./metaagents/) — `pi_agent_rust` SDK の Rust ラッパー |
+| エージェント SDK | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — QuickJS 拡張付きインプロセスランタイム |
+| テスト | Vitest, Testing Library, jsdom, `cargo test` |
+| リンター | Biome（フロントエンド）、Clippy（Rust） |
 
 ## クイックスタート
 
 ### 前提条件
 
 - [Node.js](https://nodejs.org/) 22+
-- [Rust](https://rustup.rs/)
-- pi coding agent: `npm install -g @mariozechner/pi-coding-agent`
+- [Rust](https://rustup.rs/) 1.85+
+- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — 初回設定用に一度インストール：`npm install -g @mariozechner/pi-coding-agent`、その後 `pi` を一度実行して `~/.pi/agent/settings.json` と `~/.pi/agent/models.json` を生成
+
+> **注意：** pi CLI は初期設定にのみ必要です。アプリは実行時に `pi_agent_rust` SDK を直接使用します — 通常動作中はサブプロセスやCLI呼び出しは不要です。
 
 ### インストールと実行
 
@@ -48,9 +53,18 @@ npm install
 # フロントエンド開発サーバーの実行
 npm run dev:frontend
 
-# フル Tauri アプリの実行（フロントエンド + Rust バックエンド）
+# フル Tauri アプリの実行（フロントエンド + Rust バックエンド + metaagents エンジン）
 npm run dev
 ```
+
+## 設定とデータ
+
+| 項目 | 場所 | 備考 |
+|------|------|------|
+| LLM プロバイダーと API キー | `~/.pi/agent/settings.json` | 初回 `pi` 実行時に作成 |
+| モデル定義 | `~/.pi/agent/models.json` | 初回 `pi` 実行時に作成 |
+| 拡張機能とスキル | `~/.pi/agent/extensions/` | `pi install` でインストール |
+| セッション履歴 | `~/.pi/cowork/` | pi-cowork が管理 |
 
 ## ライセンス
 

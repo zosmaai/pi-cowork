@@ -6,19 +6,21 @@
 [![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> [pi coding agent](https://github.com/badlogic/pi-mono) के लिए एक डेस्कटॉप GUI — स्ट्रीमिंग, सोच की प्रक्रिया, टूल कॉल और स्टीयरिंग, सब कुछ एक सुंदर नेटिव ऐप में।
+> [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) द्वारा संचालित डेस्कटॉप AI सहकर्मी — स्ट्रीमिंग, सोच की प्रक्रिया, टूल कॉल, मल्टी-टर्न सेशन और स्टीयरिंग, सब कुछ एक सुंदर नेटिव ऐप में।
 
 ![pi-cowork-स्क्रीनशॉट](./assets/screenshot.png)
 
 ## विशेषताएँ
 
-- **स्ट्रीमिंग प्रतिक्रियाएँ** — pi को सोचते, लिखते और टूल कॉल करते हुए रीयल-टाइम में देखें
+- **इन-प्रोसेस एजेंट रनटाइम** — pi agent SDK सीधे ऐप के अंदर चलता है (कोई सबप्रोसेस नहीं, रनटाइम पर CLI निर्भरता नहीं)
+- **मल्टी-टर्न सेशन** — लगातार सेशन इतिहास के साथ पूर्ण वार्तालाप निरंतरता
+- **स्ट्रीमिंग प्रतिक्रियाएँ** — एजेंट को सोचते, लिखते और टूल कॉल करते हुए रीयल-टाइम में देखें
 - **थिंकिंग ब्लॉक** — मॉडल का विस्तार योग्य तर्क
-- **टूल एक्जीक्यूशन कार्ड** — आर्ग्युमेंट और परिणामों के साथ लाइव bash/edit/write टूल कॉल
-- **सेशन मैनेजमेंट** — टाइमस्टैम्प के साथ लगातार चैट सेशन
+- **टूल कॉल टाइमलाइन** — आर्ग्युमेंट और परिणामों के साथ लाइव bash/edit/write टूल कॉल
+- **सेशन मैनेजमेंट** — `~/.pi/cowork/` में सहेजे गए लगातार चैट सेशन
 - **लाइट और डार्क मोड** — गर्म क्रीम लाइट मोड और गर्म चारकोल डार्क मोड
 - **कीबोर्ड शॉर्टकट** — फोकस के लिए `Cmd/Ctrl+Shift+K`, नए सेशन के लिए `Cmd/Ctrl+N`
-- **एबॉर्ट और रीट्राई** — चल रहे एजेंट को रोकें, त्रुटि पर पुनः प्रयास करें
+- **एबॉर्ट और स्टीयरिंग** — मिड-टर्न में चल रहे एजेंट को रोकें, फॉलो-अप स्टीयरिंग संदेश भेजें
 - **Claude-प्रेरित UI** — साइडबार, वर्कस्पेस और इन्फो पैनल के साथ 3-कॉलम लेआउट
 
 ## तकनीकी स्टैक
@@ -26,18 +28,21 @@
 | परत | तकनीक |
 |-----|-------|
 | फ्रंटएंड | React 19, Tailwind CSS v4, Radix UI |
-| बैकएंड | Tauri v2, Rust, Tokio |
-| टेस्टिंग | Vitest, Testing Library, jsdom |
-| लिंटर | Biome |
-| शेल | pi coding agent (`@mariozechner/pi-coding-agent`) |
+| डेस्कटॉप शेल | Tauri v2, Rust, Tokio |
+| एजेंट इंजन | [metaagents](./metaagents/) — `pi_agent_rust` SDK का Rust रैपर |
+| एजेंट SDK | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — QuickJS एक्सटेंशन के साथ इन-प्रोसेस रनटाइम |
+| टेस्टिंग | Vitest, Testing Library, jsdom, `cargo test` |
+| लिंटर | Biome (फ्रंटएंड), Clippy (Rust) |
 
 ## त्वरित शुरुआत
 
 ### पूर्वापेक्षाएँ
 
 - [Node.js](https://nodejs.org/) 22+
-- [Rust](https://rustup.rs/)
-- pi coding agent: `npm install -g @mariozechner/pi-coding-agent`
+- [Rust](https://rustup.rs/) 1.85+
+- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — प्रारंभिक सेटअप के लिए एक बार इंस्टॉल करें: `npm install -g @mariozechner/pi-coding-agent`, फिर `pi` एक बार चलाएँ ताकि `~/.pi/agent/settings.json` और `~/.pi/agent/models.json` बन सकें
+
+> **नोट:** pi CLI केवल प्रारंभिक सेटअप के लिए आवश्यक है। ऐप रनटाइम पर `pi_agent_rust` SDK का सीधे उपयोग करता है — सामान्य संचालन के दौरान कोई सबप्रोसेस या CLI कॉल आवश्यक नहीं है।
 
 ### इंस्टॉल और रन
 
@@ -48,9 +53,18 @@ npm install
 # फ्रंटएंड डेवलपमेंट सर्वर चलाएँ
 npm run dev:frontend
 
-# पूरी Tauri ऐप चलाएँ (फ्रंटएंड + Rust बैकएंड)
+# पूरी Tauri ऐप चलाएँ (फ्रंटएंड + Rust बैकएंड + metaagents इंजन)
 npm run dev
 ```
+
+## कॉन्फ़िग और डेटा
+
+| क्या | स्थान | नोट |
+|-----|-------|------|
+| LLM प्रदाता और API कुंजियाँ | `~/.pi/agent/settings.json` | पहले `pi` रन पर बनाया गया |
+| मॉडल परिभाषाएँ | `~/.pi/agent/models.json` | पहले `pi` रन पर बनाया गया |
+| एक्सटेंशन और स्किल | `~/.pi/agent/extensions/` | `pi install` से इंस्टॉल किए गए |
+| सेशन इतिहास | `~/.pi/cowork/` | pi-cowork द्वारा प्रबंधित |
 
 ## लाइसेंस
 
