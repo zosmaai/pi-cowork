@@ -32,14 +32,28 @@ vi.mock("@/hooks/usePiStatus", () => ({
 	}),
 }));
 
+const mockConfig = {
+	defaultProvider: "openai",
+	defaultModel: "gpt-4o",
+	providers: [
+		{ id: "openai", name: "OpenAI", api: "openai", modelCount: 2 },
+		{ id: "anthropic", name: "Anthropic", api: "anthropic", modelCount: 1 },
+	],
+	models: [
+		{ id: "gpt-4o", name: "GPT-4o", provider: "openai", reasoning: false, contextWindow: 128000, maxTokens: 16384 },
+		{ id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "openai", reasoning: false, contextWindow: 128000, maxTokens: 16384 },
+		{ id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", provider: "anthropic", reasoning: true, contextWindow: 200000, maxTokens: 8192 },
+	],
+};
+
 vi.mock("@/hooks/useProviders", () => ({
 	useProviders: () => ({
-		config: null,
-		providers: [],
+		config: mockConfig,
+		providers: mockConfig.providers,
 		loading: false,
 		refresh: vi.fn(),
 		setModel: vi.fn(),
-		modelsForProvider: () => [],
+		modelsForProvider: (pid: string) => mockConfig.models.filter((m) => m.provider === pid),
 	}),
 }));
 
@@ -57,5 +71,17 @@ describe("SettingsView", () => {
 	it("shows extension version badge", () => {
 		render(<SettingsView />);
 		expect(screen.getByText("v1.0.0")).toBeTruthy();
+	});
+
+	it("renders models section with providers", () => {
+		render(<SettingsView />);
+		expect(screen.getByText("Models")).toBeTruthy();
+		expect(screen.getByText("OpenAI")).toBeTruthy();
+		expect(screen.getByText("Anthropic")).toBeTruthy();
+	});
+
+	it("shows default model label", () => {
+		render(<SettingsView />);
+		expect(screen.getByText("Default: gpt-4o")).toBeTruthy();
 	});
 });
