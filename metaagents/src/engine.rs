@@ -90,9 +90,11 @@ impl MetaAgentsEngine {
 
     /// Create a session with default options (uses system defaults from SDK).
     pub async fn create_default_session(&self, id: String) -> Result<Arc<Session>, EngineError> {
-        let mut options = SessionOptions::default();
-        options.working_directory = Some(self.default_cwd.clone());
-        options.no_session = false; // Enable session persistence in the SDK
+        let options = SessionOptions {
+            working_directory: Some(self.default_cwd.clone()),
+            no_session: false,
+            ..Default::default()
+        };
         self.create_session(id, options).await
     }
 
@@ -103,11 +105,13 @@ impl MetaAgentsEngine {
         provider: String,
         model: String,
     ) -> Result<Arc<Session>, EngineError> {
-        let mut options = SessionOptions::default();
-        options.provider = Some(provider);
-        options.model = Some(model);
-        options.working_directory = Some(self.default_cwd.clone());
-        options.no_session = false;
+        let options = SessionOptions {
+            provider: Some(provider),
+            model: Some(model),
+            working_directory: Some(self.default_cwd.clone()),
+            no_session: false,
+            ..Default::default()
+        };
         self.create_session(id, options).await
     }
 

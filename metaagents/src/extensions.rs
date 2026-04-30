@@ -128,12 +128,21 @@ fn read_extension_metadata(dir: &Path) -> (String, String, String) {
             .map(|l| l.strip_prefix("# ").unwrap_or("").trim().to_string())
             .unwrap_or_default();
 
+        let mut past_frontmatter = false;
         let description = content
             .lines()
-            .skip_while(|l| l.starts_with("---") || l.is_empty())
-            .take_while(|l| !l.starts_with('#') && !l.starts_with("---"))
-            .filter(|l| !l.is_empty())
-            .next()
+            .find(|l| {
+                if !past_frontmatter && (l.starts_with("---") || l.is_empty()) {
+                    return false;
+                }
+                if !past_frontmatter {
+                    past_frontmatter = true;
+                }
+                if l.starts_with('#') || l.starts_with("---") {
+                    return false;
+                }
+                !l.is_empty()
+            })
             .map(|l| l.trim().to_string())
             .unwrap_or_default();
 
@@ -206,7 +215,7 @@ fn home_dir() -> PathBuf {
     std::env::var("HOME")
         .ok()
         .map(PathBuf::from)
-        .or_else(|| dirs::home_dir())
+        .or_else(dirs::home_dir)
         .unwrap_or_else(|| PathBuf::from("/"))
 }
 
@@ -294,9 +303,7 @@ mod tests {
     #[test]
     fn discover_extensions_handles_missing_dirs() {
         // Should not panic even if extension dirs don't exist
-        let extensions = discover_extensions();
-        // Result is valid (may be empty or populated depending on environment)
-        assert!(extensions.len() >= 0);
+        let _ = discover_extensions();
     }
 
     #[test]

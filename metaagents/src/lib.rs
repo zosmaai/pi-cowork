@@ -30,7 +30,9 @@
 //! - **Phase F** — Polish & rebrand prep.
 
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(rust_2018_idioms)]
+// Missing docs allowed for Phase C skeleton — proper docs land in Phase D/E.
+#![allow(missing_docs)]
 
 /// Re-export of the `pi_agent_rust` crate (library name `pi`).
 ///

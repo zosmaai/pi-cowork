@@ -214,7 +214,7 @@ fn home_dir() -> PathBuf {
     std::env::var("HOME")
         .ok()
         .map(PathBuf::from)
-        .or_else(|| dirs::home_dir())
+        .or_else(dirs::home_dir)
         .unwrap_or_else(|| PathBuf::from("/"))
 }
 
@@ -278,12 +278,8 @@ mod tests {
     fn load_config_handles_missing_files() {
         // When running tests, the config files may or may not exist.
         // The function should handle both cases gracefully.
-        let config = load_config();
-        // At minimum, the struct should be valid even with no data.
-        assert!(
-            config.providers.len() >= 0,
-            "ConfigSnapshot should always be constructable"
-        );
+        let _config = load_config();
+        // If we got here without panicking, ConfigSnapshot was constructed OK.
     }
 
     #[test]
