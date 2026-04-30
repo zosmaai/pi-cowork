@@ -153,9 +153,7 @@ async fn delete_session(
 
 /// List active session IDs from the engine.
 #[tauri::command]
-async fn list_engine_sessions(
-    state: tauri::State<'_, AppState>,
-) -> Result<Vec<String>, String> {
+async fn list_engine_sessions(state: tauri::State<'_, AppState>) -> Result<Vec<String>, String> {
     Ok(state.engine.list_sessions().await)
 }
 
