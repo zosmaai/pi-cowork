@@ -19,6 +19,7 @@ tokio = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
+dirs = "5"
 
 # pi_agent_rust SDK — the agent runtime this engine wraps.
 #
