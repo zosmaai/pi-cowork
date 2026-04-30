@@ -6,19 +6,21 @@
 [![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> A desktop GUI for the [pi coding agent](https://github.com/badlogic/pi-mono) — streaming, thinking, tool calls, and steering, all in a beautiful native app.
+> A desktop AI coworker powered by the [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) — streaming, thinking, tool calls, multi-turn sessions, and steering, all in a beautiful native app.
 
 ![pi-cowork-screenshot](./assets/screenshot.png)
 
 ## Features
 
-- **Streaming responses** — See pi think, write, and call tools in real-time
+- **In-process agent runtime** — The pi agent SDK runs directly inside the app (no subprocess, no CLI dependency at runtime)
+- **Multi-turn sessions** — Full conversation continuity with persistent session history
+- **Streaming responses** — See the agent think, write, and call tools in real-time
 - **Thinking blocks** — Expandable reasoning from the model
-- **Tool execution cards** — Live bash/edit/write tool calls with args and results
-- **Session management** — Persistent chat sessions with timestamps
+- **Tool call timeline** — Live bash/edit/write tool calls with args and results
+- **Session management** — Persistent chat sessions saved to `~/.pi/cowork/`
 - **Light & dark mode** — Warm cream light mode, warm charcoal dark mode
 - **Keyboard shortcuts** — `Cmd/Ctrl+Shift+K` to focus, `Cmd/Ctrl+N` for new session
-- **Abort & retry** — Stop a running agent, retry on errors
+- **Abort & steering** — Stop a running agent mid-turn, send follow-up steering messages
 - **Claude-inspired UI** — 3-column layout with sidebar, workspace, and info panel
 
 ## Architecture
@@ -28,15 +30,21 @@
 │  Tauri v2 Desktop App                                        │
 │  ┌─────────────────┐  ┌──────────────────┐  ┌────────────┐  │
 │  │   Left Sidebar  │  │  Center Workspace│  │Right Panel │  │
-│  │  (Tabs/Recents) │  │  (Chat/Welcome)  │  │(Progress)  │  │
+│  │  (Sessions)     │  │  (Chat/Welcome)  │  │(Progress)  │  │
 │  └─────────────────┘  └──────────────────┘  └────────────┘  │
 │           ▲                                              │
 │           │ React + Tailwind CSS v4                      │
 │  ┌────────┴─────────────────────────────────────────────┐│
-│  │  Rust Backend (Tokio async)                          ││
-│  │  • run_pi_stream — spawns pi --mode json --print    ││
-│  │  • abort_pi — kills running child process           ││
-│  └──────────────────────────────────────────────────────┘│
+│  │  metaagents Engine (Rust, in-process)                ││
+│  │  • Session management — create, drop, list           ││
+│  │  • Event bridging — SDK events → typed CoworkEvents  ││
+│  │  • Config reader — reads ~/.pi/agent/ settings       ││
+│  │  • Extension discovery — scans installed packages     ││
+│  └────────────┬─────────────────────────────────────────┘│
+│               │ pi_agent_rust SDK                         │
+│               │ (QuickJS extensions, providers, tools)    │
+│               ▼                                           │
+│        LLM Providers (OpenAI, Anthropic, ...)            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,18 +53,21 @@
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, Tailwind CSS v4, Radix UI |
-| Backend | Tauri v2, Rust, Tokio |
-| Testing | Vitest, Testing Library, jsdom |
-| Linting | Biome |
-| Shell | pi coding agent (`@mariozechner/pi-coding-agent`) |
+| Desktop Shell | Tauri v2, Rust, Tokio |
+| Agent Engine | [metaagents](./metaagents/) — Rust wrapper around `pi_agent_rust` SDK |
+| Agent SDK | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — in-process runtime with QuickJS extensions |
+| Testing | Vitest, Testing Library, jsdom, `cargo test` |
+| Linting | Biome (frontend), Clippy (Rust) |
 
 ## Development
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 22+
-- [Rust](https://rustup.rs/)
-- pi coding agent: `npm install -g @mariozechner/pi-coding-agent`
+- [Rust](https://rustup.rs/) 1.85+
+- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — install once to bootstrap config: `npm install -g @mariozechner/pi-coding-agent` then run `pi` once to generate `~/.pi/agent/settings.json` and `~/.pi/agent/models.json`
+
+> **Note:** The pi CLI is only needed for initial setup. The app uses the `pi_agent_rust` SDK directly at runtime — no subprocess or CLI invocation during normal operation.
 
 ### Quick Start
 
@@ -67,7 +78,7 @@ npm install
 # Run frontend dev server
 npm run dev:frontend
 
-# Run full Tauri app (frontend + Rust backend)
+# Run full Tauri app (frontend + Rust backend + metaagents engine)
 npm run dev
 ```
 
@@ -83,14 +94,27 @@ npm run format        # Biome format
 # Tauri
 npm run build:frontend
 npm run build         # Build release binary
+
+# Rust
+cargo test --workspace    # All Rust tests (engine + Tauri)
+cargo clippy --workspace  # Lint Rust code
 ```
+
+## Config & Data
+
+| What | Location | Notes |
+|------|----------|-------|
+| LLM providers & API keys | `~/.pi/agent/settings.json` | Created by `pi` on first run |
+| Model definitions | `~/.pi/agent/models.json` | Created by `pi` on first run |
+| Extensions & skills | `~/.pi/agent/extensions/` | Installed via `pi install` |
+| Session history | `~/.pi/cowork/` | Managed by pi-cowork |
 
 ## Event Streaming
 
-pi-cowork consumes pi's JSON event stream (`--mode json --print`) and maps it to React state:
+The metaagents engine translates SDK `AgentEvent`s into typed `CoworkEvent`s, sent to the frontend via Tauri channels:
 
-| pi Event | UI Effect |
-|----------|-----------|
+| Event | UI Effect |
+|-------|-----------|
 | `thinking_start/delta/end` | Expandable thinking block |
 | `text_start/delta/end` | Streaming markdown content |
 | `toolcall_start/delta/end` | Tool call card with args |
@@ -104,26 +128,34 @@ pi-cowork consumes pi's JSON event stream (`--mode json --print`) and maps it to
 
 ```
 pi-cowork/
-├── assets/                       # Screenshots, icons, etc.
+├── metaagents/                   # Agent engine (Rust library)
+│   └── src/
+│       ├── lib.rs                # Public API + re-exports
+│       ├── engine.rs             # MetaAgentsEngine — session management
+│       ├── session.rs            # Session wrapper around SDK handle
+│       ├── events.rs             # CoworkEvent types for IPC
+│       ├── config.rs             # Reads ~/.pi/agent/ settings
+│       └── extensions.rs         # Discovers installed extensions
 ├── src/                          # React frontend
 │   ├── components/               # UI components
 │   │   ├── ChatMessage.tsx       # Message with thinking + tool calls
 │   │   ├── ThinkingBlock.tsx     # Expandable reasoning
-│   │   ├── ToolCallCard.tsx      # Tool execution card
+│   │   ├── ToolCallTimeline.tsx  # Tool execution timeline
 │   │   ├── MessageInput.tsx      # Chat input
-│   │   ├── TaskCard.tsx          # Welcome screen task grid
 │   │   └── ui/                   # Primitives (tooltip, badge, etc.)
 │   ├── hooks/
-│   │   ├── usePiStatus.ts        # Pi installation check
-│   │   └── usePiStream.ts        # Streaming state machine
+│   │   ├── usePiStream.ts        # Streaming state machine (useReducer)
+│   │   └── useSessions.ts        # Session persistence
 │   ├── types/
 │   │   ├── index.ts              # ChatMessage, ToolCallInfo
-│   │   └── pi-events.ts          # Pi JSON event types
+│   │   └── pi-events.ts          # CoworkEvent types
 │   ├── App.tsx                   # Main 3-column layout
 │   └── App.css                   # Tailwind theme (light + dark)
-├── src-tauri/                    # Rust backend
+├── src-tauri/                    # Tauri desktop shell
 │   └── src/
-│       └── lib.rs                # Commands: run_pi_stream, abort_pi
+│       ├── main.rs               # Entry point
+│       └── lib.rs                # Tauri commands → metaagents engine
+├── docs/                         # Architecture & plans
 └── .github/workflows/            # CI/CD
 ```
 
