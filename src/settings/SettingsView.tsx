@@ -1,8 +1,38 @@
+import { useExtensions } from "@/hooks/useExtensions";
 import { usePiStatus } from "@/hooks/usePiStatus";
-import { FolderOpen, Info, Settings } from "lucide-react";
+import { useProviders } from "@/hooks/useProviders";
+import type { ExtensionInfo } from "@/types";
+import { FolderOpen, Info, Monitor, Puzzle, Settings } from "lucide-react";
+
+function ExtensionCard({ ext }: { ext: ExtensionInfo }) {
+	return (
+		<div className="flex items-start justify-between gap-3 py-2">
+			<div className="flex-1 min-w-0">
+				<div className="flex items-center gap-2">
+					<span className="text-sm font-medium text-foreground truncate">{ext.name}</span>
+					<span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+						v{ext.version}
+					</span>
+				</div>
+				<p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{ext.description}</p>
+			</div>
+			<span
+				className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
+					ext.enabled
+						? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+						: "bg-muted text-muted-foreground"
+				}`}
+			>
+				{ext.enabled ? "Active" : "Disabled"}
+			</span>
+		</div>
+	);
+}
 
 export function SettingsView() {
 	const { status } = usePiStatus();
+	const { extensions, loading: extensionsLoading } = useExtensions();
+	useProviders();
 
 	return (
 		<div className="flex-1 overflow-y-auto p-8">
@@ -17,7 +47,33 @@ export function SettingsView() {
 					</div>
 				</div>
 
+				{/* Extensions Section */}
+				<div className="space-y-3">
+					<div className="flex items-center gap-2">
+						<Puzzle className="w-4 h-4 text-muted-foreground" />
+						<h2 className="text-sm font-semibold text-foreground">Extensions</h2>
+						<span className="text-xs text-muted-foreground">{extensions.length} installed</span>
+					</div>
+					<div className="rounded-xl border bg-card p-4 divide-y divide-border">
+						{extensionsLoading ? (
+							<div className="py-4 text-center text-sm text-muted-foreground">Loading...</div>
+						) : extensions.length === 0 ? (
+							<div className="py-4 text-center text-sm text-muted-foreground">
+								No extensions found. Install via{" "}
+								<code className="text-xs bg-muted px-1 rounded">pi install &lt;package&gt;</code>
+							</div>
+						) : (
+							extensions.map((ext) => <ExtensionCard key={ext.id} ext={ext} />)
+						)}
+					</div>
+				</div>
+
+				{/* General Section */}
 				<div className="space-y-4">
+					<div className="flex items-center gap-2">
+						<Monitor className="w-4 h-4 text-muted-foreground" />
+						<h2 className="text-sm font-semibold text-foreground">General</h2>
+					</div>
 					<div className="rounded-xl border bg-card p-4">
 						<div className="flex items-center gap-3 mb-3">
 							<FolderOpen className="w-5 h-5 text-muted-foreground" />
