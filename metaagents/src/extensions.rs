@@ -140,7 +140,11 @@ fn read_extension_metadata(dir: &Path) -> (String, String, String) {
         return (name, "0.0.0".to_string(), description);
     }
 
-    (dir.to_string_lossy().to_string(), "0.0.0".to_string(), String::new())
+    (
+        dir.to_string_lossy().to_string(),
+        "0.0.0".to_string(),
+        String::new(),
+    )
 }
 
 /// Scan packages listed in settings.json for extension metadata.

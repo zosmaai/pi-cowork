@@ -116,7 +116,13 @@ impl MetaAgentsEngine {
         &self,
         session_id: String,
         text: String,
-    ) -> Result<(tokio::sync::mpsc::UnboundedReceiver<CoworkEvent>, tokio::task::JoinHandle<Result<pi::sdk::AssistantMessage, EngineError>>), EngineError> {
+    ) -> Result<
+        (
+            tokio::sync::mpsc::UnboundedReceiver<CoworkEvent>,
+            tokio::task::JoinHandle<Result<pi::sdk::AssistantMessage, EngineError>>,
+        ),
+        EngineError,
+    > {
         let session = self
             .get_session(&session_id)
             .await

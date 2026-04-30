@@ -8,9 +8,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use pi::sdk::{
-    AgentSessionHandle, AssistantMessage, Message, SessionOptions,
-};
+use pi::sdk::{AgentSessionHandle, AssistantMessage, Message, SessionOptions};
 use tokio::sync::{mpsc, Mutex};
 
 use crate::events::{agent_event_to_cowork, CoworkEvent, CoworkSessionEvent};
@@ -99,7 +97,13 @@ impl Session {
     pub async fn prompt(
         &self,
         text: String,
-    ) -> Result<(mpsc::UnboundedReceiver<CoworkEvent>, tokio::task::JoinHandle<Result<AssistantMessage, EngineError>>), EngineError> {
+    ) -> Result<
+        (
+            mpsc::UnboundedReceiver<CoworkEvent>,
+            tokio::task::JoinHandle<Result<AssistantMessage, EngineError>>,
+        ),
+        EngineError,
+    > {
         let (prompt_tx, prompt_rx) = mpsc::unbounded_channel::<CoworkEvent>();
 
         // Also fan out to the session-level channel.
@@ -125,7 +129,8 @@ impl Session {
                     .await?;
 
                 Ok(assistant)
-            }).await;
+            })
+            .await;
 
             result
         });
@@ -173,8 +178,6 @@ impl Session {
         guard.set_thinking_level(level).await?;
         Ok(())
     }
-
-
 
     /// Emit a session header event (async version for use in Tauri commands).
     pub async fn emit_session_event_async(&self, cwd: PathBuf) -> Result<(), EngineError> {

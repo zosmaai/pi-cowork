@@ -37,9 +37,7 @@ pub enum CoworkEvent {
     AgentStart,
 
     /// Agent lifecycle end (success).
-    AgentEnd {
-        messages: Vec<Message>,
-    },
+    AgentEnd { messages: Vec<Message> },
 
     /// Turn lifecycle start.
     TurnStart,
@@ -52,9 +50,7 @@ pub enum CoworkEvent {
     },
 
     /// Message lifecycle start.
-    MessageStart {
-        message: Message,
-    },
+    MessageStart { message: Message },
 
     /// Message update (assistant streaming).
     ///
@@ -68,9 +64,7 @@ pub enum CoworkEvent {
     },
 
     /// Message lifecycle end.
-    MessageEnd {
-        message: Message,
-    },
+    MessageEnd { message: Message },
 
     /// Tool execution start.
     ToolExecutionStart {
@@ -110,9 +104,7 @@ pub enum CoworkEvent {
     },
 
     /// Auto-compaction start.
-    CompactionStart {
-        reason: String,
-    },
+    CompactionStart { reason: String },
 
     /// Auto-compaction end.
     CompactionEnd {
@@ -149,9 +141,7 @@ pub enum CoworkEvent {
     Done,
 
     /// Error event (synthesized or from SDK).
-    Error {
-        message: String,
-    },
+    Error { message: String },
 }
 
 /// Simplified tool output for JSON serialization over the Tauri channel.
@@ -173,9 +163,7 @@ pub struct CoworkToolOutput {
 pub enum CoworkContentBlock {
     Text { text: String },
     Thinking { thinking: String },
-    Image {
-        source: CoworkImageSource,
-    },
+    Image { source: CoworkImageSource },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -195,10 +183,12 @@ impl CoworkToolOutput {
             .content
             .iter()
             .map(|block| match block {
-                pi::sdk::ContentBlock::Text(t) => CoworkContentBlock::Text { text: t.text.clone() },
-                pi::sdk::ContentBlock::Thinking(t) => {
-                    CoworkContentBlock::Thinking { thinking: t.thinking.clone() }
-                }
+                pi::sdk::ContentBlock::Text(t) => CoworkContentBlock::Text {
+                    text: t.text.clone(),
+                },
+                pi::sdk::ContentBlock::Thinking(t) => CoworkContentBlock::Thinking {
+                    thinking: t.thinking.clone(),
+                },
                 pi::sdk::ContentBlock::Image(img) => CoworkContentBlock::Image {
                     source: CoworkImageSource {
                         source_type: "base64".to_string(),
@@ -208,7 +198,9 @@ impl CoworkToolOutput {
                 },
                 pi::sdk::ContentBlock::ToolCall(_) => {
                     // Tool calls in tool output are unusual; skip.
-                    CoworkContentBlock::Text { text: String::new() }
+                    CoworkContentBlock::Text {
+                        text: String::new(),
+                    }
                 }
             })
             .collect();
@@ -226,102 +218,137 @@ impl CoworkToolOutput {
 /// Translate a single SDK `AgentEvent` into a `CoworkEvent`.
 ///
 /// Returns `None` for events the frontend doesn't need (e.g. extension errors).
-pub fn agent_event_to_cowork(
-    event: &pi::sdk::AgentEvent,
-) -> Option<CoworkEvent> {
+pub fn agent_event_to_cowork(event: &pi::sdk::AgentEvent) -> Option<CoworkEvent> {
     use pi::sdk::AgentEvent;
 
     match event {
         AgentEvent::AgentStart { .. } => Some(CoworkEvent::AgentStart),
 
-        AgentEvent::AgentEnd { messages, error: None, .. } => {
-            Some(CoworkEvent::AgentEnd { messages: messages.clone() })
-        }
+        AgentEvent::AgentEnd {
+            messages,
+            error: None,
+            ..
+        } => Some(CoworkEvent::AgentEnd {
+            messages: messages.clone(),
+        }),
 
-        AgentEvent::AgentEnd { error: Some(msg), .. } => {
-            Some(CoworkEvent::Error { message: msg.clone() })
-        }
+        AgentEvent::AgentEnd {
+            error: Some(msg), ..
+        } => Some(CoworkEvent::Error {
+            message: msg.clone(),
+        }),
 
         AgentEvent::TurnStart { .. } => Some(CoworkEvent::TurnStart),
 
-        AgentEvent::TurnEnd { message, tool_results, .. } => {
-            Some(CoworkEvent::TurnEnd {
-                message: message.clone(),
-                tool_results: tool_results.clone(),
-            })
-        }
+        AgentEvent::TurnEnd {
+            message,
+            tool_results,
+            ..
+        } => Some(CoworkEvent::TurnEnd {
+            message: message.clone(),
+            tool_results: tool_results.clone(),
+        }),
 
-        AgentEvent::MessageStart { message } => Some(CoworkEvent::MessageStart { message: message.clone() }),
+        AgentEvent::MessageStart { message } => Some(CoworkEvent::MessageStart {
+            message: message.clone(),
+        }),
 
         AgentEvent::MessageUpdate { message, .. } => {
             // The SDK's `AssistantMessageEvent` is not publicly re-exported,
             // so we serialize the full event and extract the field as JSON.
             let event_json = serde_json::to_value(event).ok()?;
-            let ame = event_json.get("assistantMessageEvent").cloned().unwrap_or_default();
+            let ame = event_json
+                .get("assistantMessageEvent")
+                .cloned()
+                .unwrap_or_default();
             Some(CoworkEvent::MessageUpdate {
                 message: message.clone(),
                 assistant_message_event: ame,
             })
         }
 
-        AgentEvent::MessageEnd { message } => Some(CoworkEvent::MessageEnd { message: message.clone() }),
+        AgentEvent::MessageEnd { message } => Some(CoworkEvent::MessageEnd {
+            message: message.clone(),
+        }),
 
-        AgentEvent::ToolExecutionStart { tool_call_id, tool_name, args, .. } => {
-            Some(CoworkEvent::ToolExecutionStart {
-                tool_call_id: tool_call_id.clone(),
-                tool_name: tool_name.clone(),
-                args: args.clone(),
-            })
-        }
+        AgentEvent::ToolExecutionStart {
+            tool_call_id,
+            tool_name,
+            args,
+            ..
+        } => Some(CoworkEvent::ToolExecutionStart {
+            tool_call_id: tool_call_id.clone(),
+            tool_name: tool_name.clone(),
+            args: args.clone(),
+        }),
 
-        AgentEvent::ToolExecutionUpdate { tool_call_id, tool_name, args, partial_result, .. } => {
-            Some(CoworkEvent::ToolExecutionUpdate {
-                tool_call_id: tool_call_id.clone(),
-                tool_name: tool_name.clone(),
-                args: args.clone(),
-                partial_result: CoworkToolOutput::from_tool_output(partial_result),
-            })
-        }
+        AgentEvent::ToolExecutionUpdate {
+            tool_call_id,
+            tool_name,
+            args,
+            partial_result,
+            ..
+        } => Some(CoworkEvent::ToolExecutionUpdate {
+            tool_call_id: tool_call_id.clone(),
+            tool_name: tool_name.clone(),
+            args: args.clone(),
+            partial_result: CoworkToolOutput::from_tool_output(partial_result),
+        }),
 
-        AgentEvent::ToolExecutionEnd { tool_call_id, tool_name, result, is_error, .. } => {
-            Some(CoworkEvent::ToolExecutionEnd {
-                tool_call_id: tool_call_id.clone(),
-                tool_name: tool_name.clone(),
-                result: CoworkToolOutput::from_tool_output(result),
-                is_error: *is_error,
-            })
-        }
+        AgentEvent::ToolExecutionEnd {
+            tool_call_id,
+            tool_name,
+            result,
+            is_error,
+            ..
+        } => Some(CoworkEvent::ToolExecutionEnd {
+            tool_call_id: tool_call_id.clone(),
+            tool_name: tool_name.clone(),
+            result: CoworkToolOutput::from_tool_output(result),
+            is_error: *is_error,
+        }),
 
-        AgentEvent::AutoCompactionStart { reason, .. } => {
-            Some(CoworkEvent::CompactionStart { reason: reason.clone() })
-        }
+        AgentEvent::AutoCompactionStart { reason, .. } => Some(CoworkEvent::CompactionStart {
+            reason: reason.clone(),
+        }),
 
-        AgentEvent::AutoCompactionEnd { result, aborted, will_retry, error_message, .. } => {
-            Some(CoworkEvent::CompactionEnd {
-                reason: "auto".to_string(),
-                result: result.clone(),
-                aborted: *aborted,
-                will_retry: *will_retry,
-                error_message: error_message.clone(),
-            })
-        }
+        AgentEvent::AutoCompactionEnd {
+            result,
+            aborted,
+            will_retry,
+            error_message,
+            ..
+        } => Some(CoworkEvent::CompactionEnd {
+            reason: "auto".to_string(),
+            result: result.clone(),
+            aborted: *aborted,
+            will_retry: *will_retry,
+            error_message: error_message.clone(),
+        }),
 
-        AgentEvent::AutoRetryStart { attempt, max_attempts, delay_ms, error_message, .. } => {
-            Some(CoworkEvent::AutoRetryStart {
-                attempt: *attempt,
-                max_attempts: *max_attempts,
-                delay_ms: *delay_ms,
-                error_message: error_message.clone(),
-            })
-        }
+        AgentEvent::AutoRetryStart {
+            attempt,
+            max_attempts,
+            delay_ms,
+            error_message,
+            ..
+        } => Some(CoworkEvent::AutoRetryStart {
+            attempt: *attempt,
+            max_attempts: *max_attempts,
+            delay_ms: *delay_ms,
+            error_message: error_message.clone(),
+        }),
 
-        AgentEvent::AutoRetryEnd { success, attempt, final_error, .. } => {
-            Some(CoworkEvent::AutoRetryEnd {
-                success: *success,
-                attempt: *attempt,
-                final_error: final_error.clone(),
-            })
-        }
+        AgentEvent::AutoRetryEnd {
+            success,
+            attempt,
+            final_error,
+            ..
+        } => Some(CoworkEvent::AutoRetryEnd {
+            success: *success,
+            attempt: *attempt,
+            final_error: final_error.clone(),
+        }),
 
         // Extension errors are internal — frontend doesn't need them.
         AgentEvent::ExtensionError { .. } => None,
@@ -355,7 +382,9 @@ mod tests {
     #[test]
     fn cowork_event_tool_execution_end_serializes_correctly() {
         let output = CoworkToolOutput {
-            content: vec![CoworkContentBlock::Text { text: "done".to_string() }],
+            content: vec![CoworkContentBlock::Text {
+                text: "done".to_string(),
+            }],
             details: None,
         };
         let event = CoworkEvent::ToolExecutionEnd {
@@ -371,7 +400,9 @@ mod tests {
 
     #[test]
     fn cowork_event_error_serializes() {
-        let event = CoworkEvent::Error { message: "timeout".to_string() };
+        let event = CoworkEvent::Error {
+            message: "timeout".to_string(),
+        };
         let json = serde_json::to_string(&event).unwrap();
         assert!(json.contains(r#""type":"error""#));
         assert!(json.contains(r#""message":"timeout""#));
@@ -400,9 +431,9 @@ mod tests {
     #[test]
     fn cowork_tool_output_from_sdk_flattens_content() {
         let tool_output = ToolOutput {
-            content: vec![
-                pi::sdk::ContentBlock::Text(pi::sdk::TextContent::new("hello")),
-            ],
+            content: vec![pi::sdk::ContentBlock::Text(pi::sdk::TextContent::new(
+                "hello",
+            ))],
             details: None,
             is_error: false,
         };
@@ -471,7 +502,9 @@ mod tests {
     #[test]
     fn cowork_event_roundtrip_tool_execution_update() {
         let output = CoworkToolOutput {
-            content: vec![CoworkContentBlock::Text { text: "partial".to_string() }],
+            content: vec![CoworkContentBlock::Text {
+                text: "partial".to_string(),
+            }],
             details: Some(serde_json::json!({"lines": 42})),
         };
         let event = CoworkEvent::ToolExecutionUpdate {
@@ -483,7 +516,11 @@ mod tests {
         let json = serde_json::to_string(&event).unwrap();
         let parsed: CoworkEvent = serde_json::from_str(&json).unwrap();
         match parsed {
-            CoworkEvent::ToolExecutionUpdate { tool_call_id, tool_name, .. } => {
+            CoworkEvent::ToolExecutionUpdate {
+                tool_call_id,
+                tool_name,
+                ..
+            } => {
                 assert_eq!(tool_call_id, "tc-3");
                 assert_eq!(tool_name, "grep");
             }
@@ -493,7 +530,9 @@ mod tests {
 
     #[test]
     fn cowork_event_compaction_start_serializes() {
-        let event = CoworkEvent::CompactionStart { reason: "threshold".to_string() };
+        let event = CoworkEvent::CompactionStart {
+            reason: "threshold".to_string(),
+        };
         let json = serde_json::to_string(&event).unwrap();
         assert!(json.contains(r#""type":"compaction_start""#));
         assert!(json.contains(r#""reason":"threshold""#));
