@@ -28,8 +28,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo install cargo-audit
-      - working-directory: src-tauri
-        run: cargo audit
+      # Workspace lockfile lives at the repo root after the workspace migration
+      # (see docs/2026-04-30-metaagents-upgrade-plan.md, Phase A).
+      - run: cargo audit
 
   codeql:
     name: CodeQL Analysis
