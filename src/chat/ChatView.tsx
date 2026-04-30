@@ -2,7 +2,7 @@ import { ChatMessageItem } from "@/components/ChatMessage";
 import { MessageInput } from "@/components/MessageInput";
 import { StatusBar } from "@/components/StatusBar";
 import { MessageSkeleton } from "@/components/StreamingIndicator";
-import type { ChatMessage } from "@/types";
+import type { ChatMessage, ModelInfo } from "@/types";
 import { useCallback, useEffect, useRef } from "react";
 
 export type StreamStateStatus = "idle" | "thinking" | "tool_call" | "responding" | "error";
@@ -15,6 +15,9 @@ interface ChatViewProps {
 	error: string | null;
 	onSend: (text: string) => void;
 	onAbort: () => void;
+	models?: ModelInfo[];
+	currentModelId?: string;
+	onModelSelect?: (provider: string, modelId: string) => void;
 }
 
 export function ChatView({
@@ -25,6 +28,9 @@ export function ChatView({
 	error,
 	onSend,
 	onAbort,
+	models,
+	currentModelId,
+	onModelSelect,
 }: ChatViewProps) {
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -117,7 +123,7 @@ export function ChatView({
 				onAbort={onAbort}
 			/>
 
-			<MessageInput ref={inputRef} onSend={onSend} disabled={isRunning} />
+			<MessageInput ref={inputRef} onSend={onSend} disabled={isRunning} models={models} currentModelId={currentModelId} onModelSelect={onModelSelect} />
 		</>
 	);
 }
