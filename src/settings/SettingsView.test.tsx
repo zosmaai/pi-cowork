@@ -75,7 +75,7 @@ describe("SettingsView", () => {
 
 	it("renders models section with providers", () => {
 		render(<SettingsView />);
-		expect(screen.getByText("Models")).toBeTruthy();
+		expect(screen.getByText(/Models.*Providers/i)).toBeTruthy();
 		expect(screen.getByText("OpenAI")).toBeTruthy();
 		expect(screen.getByText("Anthropic")).toBeTruthy();
 	});

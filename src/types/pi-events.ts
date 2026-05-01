@@ -117,9 +117,32 @@ export interface PiDoneEvent {
 	type: "done";
 }
 
+export interface CoworkErrorPayload {
+	/** User-friendly error message. */
+	message: string;
+	/** Raw SDK/backend error for debugging. */
+	details?: string;
+	/** Provider that generated the error. */
+	provider?: string;
+	/** Model that generated the error. */
+	model?: string;
+	/** Error category code. Known: provider_error, model_unavailable, connection_refused,
+	 *  authentication, rate_limited, timeout, internal, session_not_found. */
+	code?: string;
+	/** Whether retrying with a different model might resolve this error. */
+	retryable: boolean;
+}
+
 export interface PiErrorEvent {
 	type: "error";
 	message: string;
+	/** Structured error payload (added in v0.3.0). Frontend should prefer
+	 *  the structured fields over raw `message` when available. */
+	details?: string;
+	provider?: string;
+	model?: string;
+	code?: string;
+	retryable?: boolean;
 }
 
 export type PiEvent =

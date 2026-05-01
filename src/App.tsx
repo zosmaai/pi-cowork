@@ -1,6 +1,5 @@
 import { ChatView } from "@/chat/ChatView";
 import { RightPanel } from "@/components/RightPanel";
-import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { usePiStatus } from "@/hooks/usePiStatus";
 import { type StreamState, usePiStream } from "@/hooks/usePiStream";
 import { useProviders } from "@/hooks/useProviders";
@@ -33,7 +32,7 @@ function useLatest<T extends (...args: never[]) => unknown>(callback: T): T {
 }
 
 function App() {
-	const { status, loading: statusLoading, refetch } = usePiStatus();
+	const { status, loading: statusLoading } = usePiStatus();
 	const { state: streamState, startStream, abortStream, dispatch: streamDispatch } = usePiStream();
 	const {
 		sessions,
@@ -43,10 +42,23 @@ function App() {
 		deleteSession,
 		refresh: refreshSessions,
 	} = useSessions();
-	const { config } = useProviders();
+	const { config, modelsForProvider } = useProviders();
 
 	const [activeView, setActiveView] = useState<"chat" | "tasks" | "settings">("chat");
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
+
+	// Track the currently selected model for the active session.
+	// Initialized to the global default, updated on user selection.
+	const [activeModelId, setActiveModelId] = useState<string | undefined>(
+		config?.defaultModel ?? undefined,
+	);
+
+	// Sync with config when it loads (e.g., on first mount)
+	useEffect(() => {
+		if (config?.defaultModel && !activeModelId) {
+			setActiveModelId(config.defaultModel);
+		}
+	}, [config?.defaultModel]);
 
 	// Persistent chat history that survives stream resets
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -144,10 +156,25 @@ function App() {
 		currentSessionIdRef.current = id;
 		createSession(id);
 		setChatHistory([]);
+		// Reset active model to the global default for new sessions
+		setActiveModelId(config?.defaultModel ?? undefined);
 		streamDispatch({ type: "RESET" });
 	});
 
 	// Keyboard shortcuts — registered once, handler reads latest values via stable ref
+	// Listen for custom "navigate" events from child components
+	// (e.g., the "Configure Providers" button in ChatView's empty state)
+	useEffect(() => {
+		function handleNavigate(e: Event) {
+			const detail = (e as CustomEvent).detail;
+			if (detail === "settings") {
+				setActiveView("settings");
+			}
+		}
+		window.addEventListener("navigate", handleNavigate);
+		return () => window.removeEventListener("navigate", handleNavigate);
+	}, []);
+
 	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
 			// CMD+B: Toggle right panel
@@ -180,15 +207,99 @@ function App() {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [handleNewSessionRef]);
 
-	function handleSend(text: string) {
-		// Auto-create a session if none exists
+	async function handleSend(text: string) {
+		// Auto-create a session if none exists.
+		// Must await createSession to avoid a race with send_prompt.
 		if (!currentSessionIdRef.current) {
 			const id = crypto.randomUUID();
 			currentSessionIdRef.current = id;
-			createSession(id);
+			await createSession(id);
 		}
 		void startStream(text, currentSessionIdRef.current);
 	}
+
+	// Listen for 
+	async function handleModelSelect(provider: string, modelId: string) {
+		// Always update the UI optimistically, even without a session yet.
+		// The model will be applied when the first prompt is sent.
+		setActiveModelId(modelId);
+
+		if (!currentSessionIdRef.current) return;
+
+		try {
+			await invoke("set_active_model", {
+				payload: {
+					sessionId: currentSessionIdRef.current,
+					provider,
+					modelId,
+				},
+			});
+		} catch (err) {
+			console.error("[cowork] Failed to set active model:", err);
+			// Revert on error
+			setActiveModelId(config?.defaultModel ?? undefined);
+		}
+	}
+
+	// Retry the last user message (for error recovery)
+	// Supports automatic model fallback: if the error was a retryable provider
+	// error (e.g., model unavailable), switches to a different model first.
+	const handleRetry = useCallback(async () => {
+		const sessionId = currentSessionIdRef.current;
+
+		// Try automatic model fallback if the error was retryable
+		const errPayload = streamState.errorPayload;
+		if (
+			errPayload?.retryable &&
+			errPayload.provider &&
+			errPayload.model &&
+			sessionId &&
+			modelsForProvider
+		) {
+			const providerModels = modelsForProvider(errPayload.provider);
+			const fallbackModel = providerModels.find(
+				(m) => m.id !== errPayload.model,
+			);
+
+			if (fallbackModel) {
+				try {
+					await invoke("set_active_model", {
+						payload: {
+							sessionId,
+							provider: errPayload.provider,
+							modelId: fallbackModel.id,
+						},
+					});
+					setActiveModelId(fallbackModel.id);
+					console.log(
+						`[cowork] Fallback model: ${errPayload.provider}/${fallbackModel.id}`,
+					);
+				} catch (switchErr) {
+					console.error(
+						"[cowork] Failed to switch model for fallback:",
+						switchErr,
+					);
+				}
+			}
+		}
+
+		// Find the last user message from either the stream state or chat history
+		const streamMsgs = streamState.messages;
+		const lastStreamUser = [...streamMsgs].reverse().find((m) => m.role === "user");
+		const lastHistoryUser = [...chatHistory].reverse().find((m) => m.role === "user");
+
+		// Prefer the stream state (more recent), fall back to history
+		const lastUserMsg = lastStreamUser || lastHistoryUser;
+		if (lastUserMsg?.content) {
+			void handleSend(lastUserMsg.content);
+		} else {
+			// Focus the input so the user can type
+			const textarea = document.querySelector(
+				"textarea[placeholder]",
+			) as HTMLTextAreaElement | null;
+			textarea?.focus();
+		}
+	}, [streamState.messages, streamState.errorPayload, chatHistory, handleSend, modelsForProvider, setActiveModelId]);
 
 	async function handleSelectSession(id: string) {
 		// Save current session first
@@ -213,24 +324,10 @@ function App() {
 	// Build the display messages: chat history + active stream
 	const displayMessages = buildDisplayMessages(chatHistory, streamState);
 
-	if (statusLoading) {
-		return (
-			<div className="flex-1 flex items-center justify-center bg-background">
-				<div className="flex flex-col items-center gap-3">
-					<div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-					<p className="text-muted-foreground text-sm">Checking pi installation...</p>
-				</div>
-			</div>
-		);
-	}
-
-	if (!status?.installed) {
-		return (
-			<div className="flex-1 bg-background">
-				{status ? <WelcomeScreen status={status} onRefetch={refetch} /> : null}
-			</div>
-		);
-	}
+	// The MetaAgents engine runs in-process (no `pi` CLI required).
+	// We always show the main UI. If there are no providers configured,
+	// the user will be prompted to add one in Settings.
+	const noProviders = !!(config && config.models.length === 0 && !statusLoading);
 
 	return (
 		<>
@@ -261,21 +358,14 @@ function App() {
 						isRunning={streamState.isRunning}
 						status={streamState.status}
 						error={streamState.error}
+						errorPayload={streamState.errorPayload}
 						onSend={handleSend}
 						onAbort={abortStream}
+						onRetry={handleRetry}
 						models={config?.models}
-						currentModelId={config?.defaultModel ?? undefined}
-						onModelSelect={async (provider: string, modelId: string) => {
-							if (currentSessionIdRef.current) {
-								await invoke("set_active_model", {
-									payload: {
-										sessionId: currentSessionIdRef.current,
-										provider,
-										modelId,
-									},
-								});
-							}
-						}}
+						currentModelId={activeModelId}
+						onModelSelect={handleModelSelect}
+						noProviders={noProviders}
 					/>
 				)}
 

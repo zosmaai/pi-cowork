@@ -1,5 +1,7 @@
 import type { ChatMessage, ToolCallInfo } from "@/types";
 import type {
+	CoworkErrorPayload,
+	PiErrorEvent,
 	PiEvent,
 	PiMessageUpdateEvent,
 	PiToolCall,
@@ -15,6 +17,8 @@ export interface StreamState {
 	isRunning: boolean;
 	status: "idle" | "thinking" | "tool_call" | "responding" | "error";
 	error: string | null;
+	/** Structured error payload from the backend (v0.3.0+). */
+	errorPayload: CoworkErrorPayload | null;
 }
 
 export type StreamAction =
@@ -32,7 +36,7 @@ export type StreamAction =
 	  }
 	| { type: "TURN_RESET" }
 	| { type: "STREAM_COMPLETE" }
-	| { type: "STREAM_ERROR"; error: string }
+	| { type: "STREAM_ERROR"; error: string; errorPayload?: CoworkErrorPayload }
 	| { type: "ABORT_STREAM" }
 	| { type: "LOAD_SESSION"; messages: ChatMessage[] }
 	| { type: "RESET" };
@@ -43,6 +47,7 @@ export const INITIAL_STATE: StreamState = {
 	isRunning: false,
 	status: "idle",
 	error: null,
+	errorPayload: null,
 };
 
 export function streamReducer(state: StreamState, action: StreamAction): StreamState {
@@ -197,6 +202,7 @@ export function streamReducer(state: StreamState, action: StreamAction): StreamS
 				isRunning: false,
 				status: "idle",
 				error: action.error,
+				errorPayload: action.errorPayload ?? null,
 			};
 
 		case "ABORT_STREAM": {
@@ -343,7 +349,15 @@ export function usePiStream() {
 								break;
 							case "error": {
 								const reason = ame.reason === "aborted" ? "Stream aborted" : "Stream error";
-								dispatch({ type: "STREAM_ERROR", error: reason });
+								dispatch({
+									type: "STREAM_ERROR",
+									error: reason,
+									errorPayload: {
+										message: reason,
+										code: ame.reason === "aborted" ? "aborted" : "error",
+										retryable: false,
+									},
+								});
 								break;
 							}
 						}
@@ -411,12 +425,22 @@ export function usePiStream() {
 						dispatch({ type: "STREAM_COMPLETE" });
 						break;
 
-					case "error":
+					case "error": {
+						const errEvent = event as PiErrorEvent;
 						dispatch({
 							type: "STREAM_ERROR",
-							error: (event as { message: string }).message || "Unknown error",
+							error: errEvent.message || "Unknown error",
+							errorPayload: {
+								message: errEvent.message || "Unknown error",
+								details: errEvent.details,
+								provider: errEvent.provider,
+								model: errEvent.model,
+								code: errEvent.code,
+								retryable: errEvent.retryable ?? false,
+							},
 						});
 						break;
+					}
 
 					// Ignore session, agent_start, queue_update, compaction, auto_retry, etc.
 					default:

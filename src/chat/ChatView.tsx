@@ -1,8 +1,10 @@
 import { ChatMessageItem } from "@/components/ChatMessage";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { MessageInput } from "@/components/MessageInput";
 import { StatusBar } from "@/components/StatusBar";
 import { MessageSkeleton } from "@/components/StreamingIndicator";
 import type { ChatMessage, ModelInfo } from "@/types";
+import type { CoworkErrorPayload } from "@/types/pi-events";
 import { useCallback, useEffect, useRef } from "react";
 
 export type StreamStateStatus = "idle" | "thinking" | "tool_call" | "responding" | "error";
@@ -13,11 +15,15 @@ interface ChatViewProps {
 	isRunning: boolean;
 	status: StreamStateStatus;
 	error: string | null;
+	errorPayload?: CoworkErrorPayload | null;
 	onSend: (text: string) => void;
 	onAbort: () => void;
+	onRetry?: () => void;
 	models?: ModelInfo[];
 	currentModelId?: string;
 	onModelSelect?: (provider: string, modelId: string) => void;
+	/** When true, shows a setup prompt because no providers are configured. */
+	noProviders?: boolean;
 }
 
 export function ChatView({
@@ -26,11 +32,14 @@ export function ChatView({
 	isRunning,
 	status,
 	error,
+	errorPayload,
 	onSend,
 	onAbort,
+	onRetry,
 	models,
 	currentModelId,
 	onModelSelect,
+	noProviders,
 }: ChatViewProps) {
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -74,15 +83,46 @@ export function ChatView({
 						<div className="text-4xl font-bold" style={{ color: "hsl(var(--primary))" }}>
 							✦
 						</div>
-						<h1 className="text-2xl font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-							What are you working on?
-						</h1>
-						<p
-							className="text-sm max-w-md text-center"
-							style={{ color: "hsl(var(--muted-foreground))" }}
-						>
-							Start a new session to chat with Pi.
-						</p>
+						{noProviders ? (
+							<>
+								<h1 className="text-2xl font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+									Welcome to Zosma Cowork
+								</h1>
+								<p
+									className="text-sm max-w-md text-center"
+									style={{ color: "hsl(var(--muted-foreground))" }}
+								>
+									No providers are configured yet. Go to{" "}
+									<strong>Settings → Models &amp; Providers → Configure</strong>{" "}
+									to add an API key and start chatting.
+								</p>
+								<div className="flex gap-3 pt-2">
+									<button
+										type="button"
+										onClick={() => window.dispatchEvent(new CustomEvent("navigate", { detail: "settings" }))}
+										className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+										style={{
+											background: "hsl(var(--primary))",
+											color: "hsl(var(--primary-foreground))",
+										}}
+									>
+										Configure Providers
+									</button>
+								</div>
+							</>
+						) : (
+							<>
+								<h1 className="text-2xl font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+									What are you working on?
+								</h1>
+								<p
+									className="text-sm max-w-md text-center"
+									style={{ color: "hsl(var(--muted-foreground))" }}
+								>
+									Start a new session to chat with Pi.
+								</p>
+							</>
+						)}
 					</div>
 				) : (
 					<div className="pb-4">
@@ -100,19 +140,14 @@ export function ChatView({
 				)}
 			</div>
 
-			{/* Error display */}
+			{/* Error display — rich banner with structured info */}
 			{error && (
-				<div
-					className="px-4 py-2 border-t animate-fade-in"
-					style={{
-						background: "hsl(var(--error-subtle))",
-						borderColor: "hsl(var(--destructive) / 0.2)",
-					}}
-				>
-					<p className="text-sm" style={{ color: "hsl(var(--destructive))" }}>
-						{error}
-					</p>
-				</div>
+				<ErrorBanner
+					error={error}
+					errorPayload={errorPayload ?? null}
+					onRetry={onRetry}
+					onSwitchModel={onRetry}
+				/>
 			)}
 
 			{/* Status bar during streaming */}
