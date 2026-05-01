@@ -1,8 +1,8 @@
 # Cargo workspace root
 #
 # This workspace contains the metaagents engine and the Tauri shell that
-# embeds it (currently named pi-cowork; will be rebranded to Zosma Cowork
-# as part of Phase F of the upgrade plan in docs/2026-04-30-metaagents-upgrade-plan.md).
+# embeds it (Zosma Cowork product).
+# See docs/architecture/metaagents-engine.md for architecture details.
 
 [workspace]
 members = [

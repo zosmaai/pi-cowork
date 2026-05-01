@@ -60,7 +60,7 @@ export function Sidebar({
 							Pi
 						</div>
 						<div className="leading-tight">
-							<div className="text-xs font-medium text-sidebar-foreground">Pi Cowork</div>
+							<div className="text-xs font-medium text-sidebar-foreground">Zosma Cowork</div>
 							<div className="text-[10px] text-muted-foreground">{status?.version || "Ready"}</div>
 						</div>
 					</div>

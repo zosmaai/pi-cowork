@@ -7,14 +7,15 @@
 //! products (Zosma Code) can build on without coupling to the underlying pi
 //! SDK shape.
 //!
-//! ## Phase C status — Complete
+//! ## Modules
 //!
-//! The engine layer is fully implemented:
-//! - **[[events]]** — `CoworkEvent` enum matching frontend PiEvent taxonomy
-//! - **[[session]]** — `Session` wrapper around `AgentSessionHandle` with event bridging
-//! - **[[engine]]** — `MetaAgentsEngine` managing session lifecycle (create/get/drop)
-//! - **[[config]]** — Read pi settings and model registry from disk
-//! - **[[extensions]]** — Discover extensions from local dirs and settings packages
+//! | Module | Purpose |
+//! |--------|---------|
+//! | **[[events]]** | `CoworkEvent` enum matching frontend PiEvent taxonomy |
+//! | **[[session]]** | `Session` wrapper around `AgentSessionHandle` with event bridging |
+//! | **[[engine]]** | `MetaAgentsEngine` managing session lifecycle (create/get/drop) |
+//! | **[[config]]** | Read pi settings and model registry from disk |
+//! | **[[extensions]]** | Discover extensions from local dirs and settings packages |
 //!
 //! ## Re-exports
 //!
@@ -22,17 +23,10 @@
 //! `use metaagents::pi::sdk::*;` without taking a direct dependency on
 //! `pi_agent_rust` (and without caring about its name remap from
 //! `pi_agent_rust` to library name `pi`).
-//!
-//! ## Roadmap
-//!
-//! - **Phase D** — Tauri backend migrates to call into this crate.
-//! - **Phase E** — Frontend updates (use new commands, extensions/models UI).
-//! - **Phase F** — Polish & rebrand prep.
 
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms)]
-// Missing docs allowed for Phase C skeleton — proper docs land in Phase D/E.
-#![allow(missing_docs)]
+// All public API items have docs. If adding new exports, add docs too.
 
 /// Re-export of the `pi_agent_rust` crate (library name `pi`).
 ///
@@ -69,10 +63,9 @@ pub const PI_SDK_VERSION: &str = "0.1.13";
 
 /// Returns a short banner describing this build of the engine.
 ///
-/// Used by smoke tests and by the Tauri shell to confirm linkage during
-/// Phases A–B. Will be supplemented by richer diagnostics in later phases.
+/// Used by smoke tests and the Tauri shell's About dialog.
 pub fn banner() -> String {
-    format!("metaagents v{VERSION} (pi sdk v{PI_SDK_VERSION}, phase-b linked)")
+    format!("metaagents v{VERSION} (pi sdk v{PI_SDK_VERSION})")
 }
 
 #[cfg(test)]

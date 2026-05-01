@@ -4270,7 +4270,7 @@ dependencies = [
 
 [[package]]
 name = "metaagents"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "dirs 5.0.1",
@@ -4279,6 +4279,23 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
+name = "metaagents-cowork"
+version = "0.2.0"
+dependencies = [
+ "log",
+ "metaagents",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-fs",
+ "tauri-plugin-log",
+ "tauri-plugin-notification",
+ "tauri-plugin-shell",
  "tokio",
 ]
 
@@ -5021,23 +5038,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e57fef6bc5981e38c2ce2d63bfa546861309f875b8a75f092d1d54ae2d64f266"
 dependencies = [
  "siphasher 1.0.2",
-]
-
-[[package]]
-name = "pi-cowork"
-version = "0.1.0"
-dependencies = [
- "log",
- "metaagents",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-fs",
- "tauri-plugin-log",
- "tauri-plugin-notification",
- "tauri-plugin-shell",
- "tokio",
 ]
 
 [[package]]

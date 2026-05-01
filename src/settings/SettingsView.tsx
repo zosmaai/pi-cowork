@@ -97,7 +97,7 @@ export function SettingsView() {
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold text-foreground">Settings</h1>
-						<p className="text-sm text-muted-foreground">Configure Pi Cowork</p>
+						<p className="text-sm text-muted-foreground">Configure Zosma Cowork</p>
 					</div>
 				</div>
 
@@ -178,7 +178,7 @@ export function SettingsView() {
 						<div className="space-y-2 text-sm text-muted-foreground">
 							<div className="flex justify-between">
 								<span>Version</span>
-								<span className="text-foreground">0.1.0</span>
+								<span className="text-foreground">0.2.0</span>
 							</div>
 							<div className="flex justify-between">
 								<span>Pi Status</span>
