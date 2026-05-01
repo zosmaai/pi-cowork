@@ -237,8 +237,9 @@ function ProviderEditForm({
 
 			{/* API type */}
 			<div>
-				<label className="text-xs text-muted-foreground mb-1 block">API Type</label>
+				<label htmlFor={`${provider.id}-api`} className="text-xs text-muted-foreground mb-1 block">API Type</label>
 				<select
+					id={`${provider.id}-api`}
 					value={provider.api}
 					onChange={(e) => onUpdate({ ...provider, api: e.target.value })}
 					className="w-full text-sm rounded-lg border bg-background px-3 py-1.5 text-foreground focus:outline-none focus:ring-1"
@@ -251,8 +252,9 @@ function ProviderEditForm({
 
 			{/* Base URL */}
 			<div>
-				<label className="text-xs text-muted-foreground mb-1 block">Base URL</label>
+				<label htmlFor={`${provider.id}-baseUrl`} className="text-xs text-muted-foreground mb-1 block">Base URL</label>
 				<input
+					id={`${provider.id}-baseUrl`}
 					type="text"
 					value={provider.baseUrl}
 					onChange={(e) => onUpdate({ ...provider, baseUrl: e.target.value })}
@@ -264,10 +266,11 @@ function ProviderEditForm({
 
 			{/* API Key */}
 			<div>
-				<label className="text-xs text-muted-foreground mb-1 block">
+				<label htmlFor={`${provider.id}-apiKey`} className="text-xs text-muted-foreground mb-1 block">
 					API Key <span className="text-destructive">*</span>
 				</label>
 				<input
+					id={`${provider.id}-apiKey`}
 					type="password"
 					value={provider.apiKey}
 					onChange={(e) => onUpdate({ ...provider, apiKey: e.target.value })}
@@ -280,7 +283,7 @@ function ProviderEditForm({
 			{/* Models list */}
 			<div>
 				<div className="flex items-center justify-between mb-1">
-					<label className="text-xs text-muted-foreground">Models</label>
+					<span className="text-xs text-muted-foreground">Models</span>
 					<button
 						type="button"
 						onClick={addModel}
@@ -292,7 +295,7 @@ function ProviderEditForm({
 				<div className="space-y-2">
 					{provider.models.map((model, idx) => (
 						<div
-							key={idx}
+							key={model.id || `model-${idx}`}
 							className="flex items-center gap-2 rounded-lg border p-2"
 							style={{ borderColor: "hsl(var(--border))" }}
 						>

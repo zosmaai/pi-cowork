@@ -467,36 +467,74 @@ pub fn categorize_engine_error(error: &str) -> CoworkErrorPayload {
     // Order matters: check more specific patterns BEFORE "provider error"
     // since many errors (connection refused, auth, timeout) appear within
     // a Provider error wrapper.
-    let (code, retryable, friendly_message) = if lower.contains("connection refused") || lower.contains("connection error") {
-        ("connection_refused", false, format!(
-            "Could not connect to {}. Make sure the provider is running and accessible.",
-            provider.as_deref().unwrap_or("your provider")
-        ))
-    } else if lower.contains("401") || lower.contains("unauthorized") || lower.contains("authentication") {
-        ("authentication", false, "Authentication failed. Check your API key.".to_string())
-    } else if lower.contains("429") || lower.contains("rate limit") {
-        ("rate_limited", true, "You've been rate limited. Please wait a moment and try again.".to_string())
-    } else if lower.contains("timeout") || lower.contains("timed out") {
-        ("timeout", true, "The request timed out. The provider might be overloaded.".to_string())
-    } else if (lower.contains("model") && lower.contains("not found")) || lower.contains("model unavailable") {
-        ("model_unavailable", true, format!(
-            "Model '{}' is not available on {}. Try selecting a different model.",
-            model.as_deref().unwrap_or("unknown"),
-            provider.as_deref().unwrap_or("your provider")
-        ))
-    } else if lower.contains("provider error") {
-        ("provider_error", true, format!(
+    let (code, retryable, friendly_message) =
+        if lower.contains("connection refused") || lower.contains("connection error") {
+            (
+                "connection_refused",
+                false,
+                format!(
+                    "Could not connect to {}. Make sure the provider is running and accessible.",
+                    provider.as_deref().unwrap_or("your provider")
+                ),
+            )
+        } else if lower.contains("401")
+            || lower.contains("unauthorized")
+            || lower.contains("authentication")
+        {
+            (
+                "authentication",
+                false,
+                "Authentication failed. Check your API key.".to_string(),
+            )
+        } else if lower.contains("429") || lower.contains("rate limit") {
+            (
+                "rate_limited",
+                true,
+                "You've been rate limited. Please wait a moment and try again.".to_string(),
+            )
+        } else if lower.contains("timeout") || lower.contains("timed out") {
+            (
+                "timeout",
+                true,
+                "The request timed out. The provider might be overloaded.".to_string(),
+            )
+        } else if (lower.contains("model") && lower.contains("not found"))
+            || lower.contains("model unavailable")
+        {
+            (
+                "model_unavailable",
+                true,
+                format!(
+                    "Model '{}' is not available on {}. Try selecting a different model.",
+                    model.as_deref().unwrap_or("unknown"),
+                    provider.as_deref().unwrap_or("your provider")
+                ),
+            )
+        } else if lower.contains("provider error") {
+            (
+                "provider_error",
+                true,
+                format!(
             "{} is returning errors. The model might not be running or the provider may be down.",
             provider.as_deref().unwrap_or("Your provider")
-        ))
-    } else if lower.contains("session not found") {
-        ("session_not_found", false, "Session not found. Please try creating a new session.".to_string())
-    } else {
-        ("internal", false, format!(
-            "An unexpected error occurred: {}",
-            truncate_message(error, 120)
-        ))
-    };
+        ),
+            )
+        } else if lower.contains("session not found") {
+            (
+                "session_not_found",
+                false,
+                "Session not found. Please try creating a new session.".to_string(),
+            )
+        } else {
+            (
+                "internal",
+                false,
+                format!(
+                    "An unexpected error occurred: {}",
+                    truncate_message(error, 120)
+                ),
+            )
+        };
 
     let mut payload = CoworkErrorPayload::new(friendly_message)
         .with_details(error)
@@ -517,7 +555,7 @@ pub fn categorize_engine_error(error: &str) -> CoworkErrorPayload {
 
 /// Extract provider name from an error like "Provider error: local-qwen: ..."
 fn extract_provider(error: &str) -> Option<String> {
-    // Pattern: "Provider error: <name>:" or "provider <name>" 
+    // Pattern: "Provider error: <name>:" or "provider <name>"
     if let Some(idx) = error.find("Provider error: ") {
         let rest = &error[idx + "Provider error: ".len()..];
         if let Some(end) = rest.find(':') {
@@ -532,7 +570,9 @@ fn extract_model(error: &str) -> Option<String> {
     // Pattern: "Model Group=<name>" (LiteLLM style)
     if let Some(idx) = error.find("Model Group=") {
         let rest = &error[idx + "Model Group=".len()..];
-        let end = rest.find(|c: char| c.is_whitespace() || c == ',' || c == '\n').unwrap_or(rest.len());
+        let end = rest
+            .find(|c: char| c.is_whitespace() || c == ',' || c == '\n')
+            .unwrap_or(rest.len());
         return Some(rest[..end].trim().to_string());
     }
     // Pattern: model '<name>' not found
@@ -636,7 +676,7 @@ mod tests {
         assert!(!json.contains("provider"));
         assert!(!json.contains("model"));
         assert!(!json.contains("code"));
-        assert!(!json.contains(r#""retryable"#));  // retryable=false is skipped by skip_serializing_if
+        assert!(!json.contains(r#""retryable"#)); // retryable=false is skipped by skip_serializing_if
     }
 
     #[test]

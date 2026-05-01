@@ -250,7 +250,9 @@ pub fn models_json_path() -> PathBuf {
 pub fn read_models_json_raw() -> serde_json::Value {
     let path = models_json_path();
     match std::fs::read_to_string(&path) {
-        Ok(content) => serde_json::from_str(&content).unwrap_or(serde_json::json!({"providers": {}})),
+        Ok(content) => {
+            serde_json::from_str(&content).unwrap_or(serde_json::json!({"providers": {}}))
+        }
         Err(_) => serde_json::json!({"providers": {}}),
     }
 }
@@ -263,8 +265,7 @@ pub fn write_models_json_raw(content: &serde_json::Value) -> Result<(), String> 
     let path = models_json_path();
     let pretty = serde_json::to_string_pretty(content)
         .map_err(|e| format!("Failed to serialize models config: {e}"))?;
-    std::fs::write(&path, pretty)
-        .map_err(|e| format!("Failed to write models.json: {e}"))?;
+    std::fs::write(&path, pretty).map_err(|e| format!("Failed to write models.json: {e}"))?;
     Ok(())
 }
 
@@ -272,7 +273,10 @@ pub fn write_models_json_raw(content: &serde_json::Value) -> Result<(), String> 
 ///
 /// Takes the provider ID and a JSON object with provider settings.
 /// Merges with existing models list if the provider already exists.
-pub fn upsert_provider(provider_id: &str, provider_config: &serde_json::Value) -> Result<(), String> {
+pub fn upsert_provider(
+    provider_id: &str,
+    provider_config: &serde_json::Value,
+) -> Result<(), String> {
     let mut root = read_models_json_raw();
 
     // Ensure root is an object with a "providers" map

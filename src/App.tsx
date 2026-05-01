@@ -58,7 +58,7 @@ function App() {
 		if (config?.defaultModel && !activeModelId) {
 			setActiveModelId(config.defaultModel);
 		}
-	}, [config?.defaultModel]);
+	}, [config?.defaultModel, activeModelId]);
 
 	// Persistent chat history that survives stream resets
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -207,16 +207,19 @@ function App() {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [handleNewSessionRef]);
 
-	async function handleSend(text: string) {
-		// Auto-create a session if none exists.
-		// Must await createSession to avoid a race with send_prompt.
-		if (!currentSessionIdRef.current) {
-			const id = crypto.randomUUID();
-			currentSessionIdRef.current = id;
-			await createSession(id);
-		}
-		void startStream(text, currentSessionIdRef.current);
-	}
+	const handleSend = useCallback(
+		async (text: string) => {
+			// Auto-create a session if none exists.
+			// Must await createSession to avoid a race with send_prompt.
+			if (!currentSessionIdRef.current) {
+				const id = crypto.randomUUID();
+				currentSessionIdRef.current = id;
+				await createSession(id);
+			}
+			void startStream(text, currentSessionIdRef.current);
+		},
+		[startStream, createSession],
+	);
 
 	// Listen for 
 	async function handleModelSelect(provider: string, modelId: string) {
@@ -299,7 +302,7 @@ function App() {
 			) as HTMLTextAreaElement | null;
 			textarea?.focus();
 		}
-	}, [streamState.messages, streamState.errorPayload, chatHistory, handleSend, modelsForProvider, setActiveModelId]);
+	}, [streamState.messages, streamState.errorPayload, chatHistory, handleSend, modelsForProvider]);
 
 	async function handleSelectSession(id: string) {
 		// Save current session first

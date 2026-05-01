@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use metaagents::config::{self, ConfigSnapshot, ModelInfo, ProviderInfo};
 use metaagents::engine::MetaAgentsEngine;
-use metaagents::events::{categorize_engine_error, CoworkEvent, CoworkErrorPayload};
+use metaagents::events::{categorize_engine_error, CoworkErrorPayload, CoworkEvent};
 use metaagents::extensions::ExtensionInfo;
 use serde::{Deserialize, Serialize};
 
@@ -142,9 +142,10 @@ async fn send_prompt(
             let _ = channel.send(CoworkEvent::Error(payload));
         }
         Err(join_err) => {
-            let payload = CoworkErrorPayload::new(format!("Internal error: the prompt task panicked"))
-                .with_details(format!("{join_err}"))
-                .with_code("internal");
+            let payload =
+                CoworkErrorPayload::new("Internal error: the prompt task panicked".to_string())
+                    .with_details(format!("{join_err}"))
+                    .with_code("internal");
             let _ = channel.send(CoworkEvent::Error(payload));
         }
     }
