@@ -4,6 +4,10 @@
 //! replaces the old subprocess approach (`pi --mode json`) with in-process
 //! SDK sessions, giving us multi-turn conversations, steering, and <1ms
 //! prompt latency.
+//!
+//! All Zosma Cowork config lives under `~/.zosmaai/agent/`. The pi SDK is
+//! redirected to this directory via the `PI_CODING_AGENT_DIR` env var set
+//! at startup.
 
 use std::sync::Arc;
 
@@ -292,6 +296,33 @@ async fn delete_provider_cmd(
 }
 
 // ---------------------------------------------------------------------------
+// Commands — auth configuration (auth.json)
+// ---------------------------------------------------------------------------
+
+/// Save an API key for a built-in provider in auth.json.
+///
+/// Creates the file if it doesn't exist. Merges with existing entries.
+/// Uses the standard pi auth format.
+#[tauri::command]
+async fn save_auth_key(provider_id: String, api_key: String) -> Result<(), String> {
+    config::save_auth_api_key(&provider_id, &api_key)
+}
+
+/// Check if any provider has a valid API key in auth.json.
+///
+/// Returns true if at least one provider entry has type "api_key" with a non-empty key.
+#[tauri::command]
+async fn has_any_credentials() -> bool {
+    config::has_any_api_keys()
+}
+
+/// List all providers that have API keys configured in auth.json.
+#[tauri::command]
+async fn list_auth_providers() -> Vec<String> {
+    config::list_auth_providers()
+}
+
+// ---------------------------------------------------------------------------
 // Commands — pi CLI (welcome flow)
 // ---------------------------------------------------------------------------
 
@@ -361,6 +392,10 @@ fn engine_banner() -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Redirect the pi SDK to use ~/.zosmaai/agent/ instead of ~/.pi/agent/
+    let agent_dir = config::ensure_agent_dir().expect("Failed to create agent directory");
+    std::env::set_var("PI_CODING_AGENT_DIR", agent_dir.to_string_lossy().as_ref());
+
     let engine = Arc::new(MetaAgentsEngine::new());
     let config = Arc::new(std::sync::RwLock::new(config::load_config()));
 
@@ -397,6 +432,10 @@ pub fn run() {
             save_models_config,
             upsert_provider,
             delete_provider_cmd,
+            // Auth configuration (auth.json)
+            save_auth_key,
+            has_any_credentials,
+            list_auth_providers,
             // Pi CLI (welcome flow)
             check_pi_status,
             install_pi,

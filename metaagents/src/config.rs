@@ -1,8 +1,12 @@
-//! Configuration reader — reads pi settings and model registry from disk.
+//! Configuration reader — reads Zosma settings and model registry from disk.
 //!
-//! This module provides structured access to pi's configuration files:
-//! - `~/.pi/agent/settings.json` — default provider, model, packages, etc.
-//! - `~/.pi/agent/models.json` — custom provider definitions and models
+//! All Zosma Cowork configuration lives under `~/.zosmaai/agent/`:
+//! - `settings.json` — default provider, model, packages, etc.
+//! - `models.json` — custom provider definitions and models
+//! - `auth.json` — API keys for built-in providers
+//!
+//! The pi SDK is also redirected to this directory via the
+//! `PI_CODING_AGENT_DIR` env var set at Tauri startup.
 
 use std::path::{Path, PathBuf};
 
@@ -137,8 +141,7 @@ pub struct ModelInfo {
 
 /// Load the complete configuration snapshot from disk.
 pub fn load_config() -> ConfigSnapshot {
-    let home = home_dir();
-    let agent_dir = home.join(".pi").join("agent");
+    let agent_dir = zosmaai_agent_dir();
 
     let settings = load_settings(&agent_dir);
     let (providers, models) = load_models(&agent_dir);
@@ -218,6 +221,26 @@ fn home_dir() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("/"))
 }
 
+/// Return the base `~/.zosmaai/` directory.
+pub fn zosmaai_dir() -> PathBuf {
+    home_dir().join(".zosmaai")
+}
+
+/// Return the `~/.zosmaai/agent/` directory where all config lives.
+pub fn zosmaai_agent_dir() -> PathBuf {
+    zosmaai_dir().join("agent")
+}
+
+/// Ensure `~/.zosmaai/agent/` exists on disk (creates parent dirs too).
+///
+/// Call this once at app startup so that config writes never fail due to
+/// missing directories.
+pub fn ensure_agent_dir() -> Result<PathBuf, String> {
+    let dir = zosmaai_agent_dir();
+    std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create agent dir {}: {e}", dir.display()))?;
+    Ok(dir)
+}
+
 /// Get the default provider/model from settings.
 pub fn default_model(config: &ConfigSnapshot) -> Option<(String, String)> {
     let settings = config.settings.as_ref()?;
@@ -239,9 +262,9 @@ pub fn list_packages(config: &ConfigSnapshot) -> Vec<String> {
 // Provider configuration write support (models.json editing)
 // ---------------------------------------------------------------------------
 
-/// Path to the pi models.json file.
+/// Path to `~/.zosmaai/agent/models.json`.
 pub fn models_json_path() -> PathBuf {
-    home_dir().join(".pi").join("agent").join("models.json")
+    zosmaai_agent_dir().join("models.json")
 }
 
 /// Read the raw models.json content as a JSON value.
@@ -306,9 +329,115 @@ pub fn delete_provider(provider_id: &str) -> Result<(), String> {
     write_models_json_raw(&root)
 }
 
-/// Return the agent directory path.
+/// Return the `~/.zosmaai/agent/` directory (alias for zosmaai_agent_dir).
+#[deprecated(since = "0.3.0", note = "Use zosmaai_agent_dir() instead")]
 pub fn agent_dir() -> PathBuf {
-    home_dir().join(".pi").join("agent")
+    zosmaai_agent_dir()
+}
+
+// ---------------------------------------------------------------------------
+// Auth configuration (auth.json — API keys for built-in providers)
+// ---------------------------------------------------------------------------
+
+/// Path to `~/.zosmaai/agent/auth.json`.
+pub fn auth_json_path() -> PathBuf {
+    zosmaai_agent_dir().join("auth.json")
+}
+
+/// Read the raw auth.json content as a JSON value.
+///
+/// Returns an empty object `{}` if the file doesn't exist or can't be parsed.
+pub fn read_auth_json() -> serde_json::Value {
+    let path = auth_json_path();
+    match std::fs::read_to_string(&path) {
+        Ok(content) => serde_json::from_str(&content).unwrap_or(serde_json::json!({})),
+        Err(_) => serde_json::json!({}),
+    }
+}
+
+/// Save an API key for a built-in provider in auth.json.
+///
+/// Creates the file if it doesn't exist. Merges with existing entries.
+/// Uses the standard pi auth format: `{ "provider-id": { "type": "api_key", "key": "..." } }`.
+pub fn save_auth_api_key(provider_id: &str, api_key: &str) -> Result<(), String> {
+    let mut root = read_auth_json();
+
+    let providers = root
+        .as_object_mut()
+        .ok_or_else(|| "auth.json root must be an object".to_string())?;
+
+    providers.insert(
+        provider_id.to_string(),
+        serde_json::json!({
+            "type": "api_key",
+            "key": api_key
+        }),
+    );
+
+    let path = auth_json_path();
+    let pretty = serde_json::to_string_pretty(&root)
+        .map_err(|e| format!("Failed to serialize auth config: {e}"))?;
+    std::fs::write(&path, pretty).map_err(|e| format!("Failed to write auth.json: {e}"))?;
+    Ok(())
+}
+
+/// Remove an auth entry for a provider from auth.json.
+pub fn remove_auth_entry(provider_id: &str) -> Result<(), String> {
+    let mut root = read_auth_json();
+
+    let providers = root
+        .as_object_mut()
+        .ok_or_else(|| "auth.json root must be an object".to_string())?;
+
+    providers.remove(provider_id);
+
+    let path = auth_json_path();
+    let pretty = serde_json::to_string_pretty(&root)
+        .map_err(|e| format!("Failed to serialize auth config: {e}"))?;
+    std::fs::write(&path, pretty).map_err(|e| format!("Failed to write auth.json: {e}"))?;
+    Ok(())
+}
+
+/// Check if any provider has a valid API key configured in auth.json.
+///
+/// Returns true if at least one provider entry has type "api_key" with a non-empty key.
+pub fn has_any_api_keys() -> bool {
+    let root = read_auth_json();
+    let Some(obj) = root.as_object() else {
+        return false;
+    };
+
+    obj.values().any(|entry| {
+        entry.get("type").and_then(|t| t.as_str()) == Some("api_key")
+            && entry
+                .get("key")
+                .and_then(|k| k.as_str())
+                .map(|k| !k.is_empty())
+                .unwrap_or(false)
+    })
+}
+
+/// List all providers that have API keys configured in auth.json.
+///
+/// Returns a list of provider IDs that have non-empty API keys.
+pub fn list_auth_providers() -> Vec<String> {
+    let root = read_auth_json();
+    let Some(obj) = root.as_object() else {
+        return Vec::new();
+    };
+
+    obj
+        .iter()
+        .filter(|(_, entry)| {
+            entry.get("type").and_then(|t| t.as_str()) == Some("api_key")
+                && entry
+                    .get("key")
+                    .and_then(|k| k.as_str())
+                    .map(|k| !k.is_empty())
+                    .unwrap_or(false)
+        })
+        .map(|(id, _)| id.clone())
+        .collect()
 }
 
 #[cfg(test)]

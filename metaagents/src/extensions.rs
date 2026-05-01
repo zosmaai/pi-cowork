@@ -1,10 +1,10 @@
-//! Extension discovery — scans pi extension directories and package metadata.
+//! Extension discovery — scans Zosma extension directories and package metadata.
 //!
-//! This module discovers pi extensions installed in:
-//! - `~/.pi/agent/extensions/` (local extensions)
+//! This module discovers extensions installed in:
+//! - `~/.zosmaai/agent/extensions/` (local extensions)
 //! - Packages listed in settings.json (npm packages with extension manifests)
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
@@ -35,7 +35,7 @@ pub struct ExtensionInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum ExtensionSource {
-    /// Local directory in ~/.pi/agent/extensions/
+    /// Local directory in ~/.zosmaai/agent/extensions/
     Local,
     /// Installed via npm (from packages list in settings)
     #[default]
@@ -44,10 +44,9 @@ pub enum ExtensionSource {
     LocalPath,
 }
 
-/// Discover all extensions from pi's directories.
+/// Discover all extensions from Zosma directories.
 pub fn discover_extensions() -> Vec<ExtensionInfo> {
-    let home = home_dir();
-    let agent_dir = home.join(".pi").join("agent");
+    let agent_dir = crate::config::zosmaai_agent_dir();
 
     let mut extensions = Vec::new();
 
@@ -208,15 +207,6 @@ fn parse_package_source(pkg: &str) -> (String, ExtensionSource) {
     } else {
         (pkg.to_string(), ExtensionSource::Npm)
     }
-}
-
-/// Get the home directory path.
-fn home_dir() -> PathBuf {
-    std::env::var("HOME")
-        .ok()
-        .map(PathBuf::from)
-        .or_else(dirs::home_dir)
-        .unwrap_or_else(|| PathBuf::from("/"))
 }
 
 /// Check if an extension is enabled (based on settings packages list).
