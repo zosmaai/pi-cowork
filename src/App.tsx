@@ -1,5 +1,8 @@
 import { ChatView } from "@/chat/ChatView";
+import { HomeView } from "@/components/HomeView";
+import { ProviderSetup } from "@/components/ProviderSetup";
 import { RightPanel } from "@/components/RightPanel";
+import { AUTH_PROVIDERS, useAuth } from "@/hooks/useAuth";
 import { usePiStatus } from "@/hooks/usePiStatus";
 import { type StreamState, usePiStream } from "@/hooks/usePiStream";
 import { useProviders } from "@/hooks/useProviders";
@@ -32,7 +35,7 @@ function useLatest<T extends (...args: never[]) => unknown>(callback: T): T {
 }
 
 function App() {
-	const { status, loading: statusLoading } = usePiStatus();
+	const { status } = usePiStatus();
 	const { state: streamState, startStream, abortStream, dispatch: streamDispatch } = usePiStream();
 	const {
 		sessions,
@@ -43,6 +46,10 @@ function App() {
 		refresh: refreshSessions,
 	} = useSessions();
 	const { config, modelsForProvider } = useProviders();
+	const { hasCredentials, configuredProviders, loading: authLoading, saveApiKey } = useAuth();
+
+	// Provider setup wizard state
+	const [showProviderSetup, setShowProviderSetup] = useState(false);
 
 	const [activeView, setActiveView] = useState<"chat" | "tasks" | "settings">("chat");
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
@@ -328,9 +335,9 @@ function App() {
 	const displayMessages = buildDisplayMessages(chatHistory, streamState);
 
 	// The MetaAgents engine runs in-process (no `pi` CLI required).
-	// We always show the main UI. If there are no providers configured,
-	// the user will be prompted to add one in Settings.
-	const noProviders = !!(config && config.models.length === 0 && !statusLoading);
+	// Onboarding: if no API keys are configured, show welcome/setup flow.
+	const hasAnyAuth = !!hasCredentials;
+	const needsOnboarding = authLoading === false && !hasAnyAuth;
 
 	return (
 		<>
@@ -355,21 +362,40 @@ function App() {
 			{/* Main content */}
 			<main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
 				{activeView === "chat" && (
-					<ChatView
-						messages={displayMessages}
-						streamingMessage={streamState.streamingMessage}
-						isRunning={streamState.isRunning}
-						status={streamState.status}
-						error={streamState.error}
-						errorPayload={streamState.errorPayload}
-						onSend={handleSend}
-						onAbort={abortStream}
-						onRetry={handleRetry}
-						models={config?.models}
-						currentModelId={activeModelId}
-						onModelSelect={handleModelSelect}
-						noProviders={noProviders}
-					/>
+					/* Provider setup wizard overlay */
+					showProviderSetup ? (
+						<ProviderSetup
+							providers={AUTH_PROVIDERS}
+							configuredProviders={configuredProviders}
+							onSave={async (providerId, apiKey) => {
+								await saveApiKey(providerId, apiKey);
+								setShowProviderSetup(false);
+							}}
+							onCancel={() => setShowProviderSetup(false)}
+						/>
+					) : needsOnboarding ? (
+						/* Welcome screen (no credentials yet) */
+						<HomeView
+							showWelcome
+							onConnectProvider={() => setShowProviderSetup(true)}
+						/>
+					) : (
+						/* Normal chat view */
+						<ChatView
+							messages={displayMessages}
+							streamingMessage={streamState.streamingMessage}
+							isRunning={streamState.isRunning}
+							status={streamState.status}
+							error={streamState.error}
+							errorPayload={streamState.errorPayload}
+							onSend={handleSend}
+							onAbort={abortStream}
+							onRetry={handleRetry}
+							models={config?.models}
+							currentModelId={activeModelId}
+							onModelSelect={handleModelSelect}
+						/>
+					)
 				)}
 
 				{activeView === "tasks" && <TasksView />}
