@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Pi Cowork",
-  "version": "0.1.0",
-  "identifier": "ai.zosma.pi-cowork",
+  "productName": "Zosma Cowork",
+  "version": "0.2.0",
+  "identifier": "ai.zosma.cowork",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Pi Cowork",
+        "title": "Zosma Cowork",
         "width": 1400,
         "height": 900,
         "minWidth": 800,

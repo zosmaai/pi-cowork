@@ -1,6 +1,6 @@
 [package]
 name = "metaagents"
-version = "0.1.0"
+version = "0.2.0"
 description = "MetaAgents engine — a UI-agnostic agent harness built on pi_agent_rust"
 authors = ["zosmaai"]
 edition.workspace = true

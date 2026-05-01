@@ -1,7 +1,7 @@
 [package]
-name = "pi-cowork"
-version = "0.1.0"
-description = "Desktop GUI for the pi coding agent (Zosma Cowork)"
+name = "metaagents-cowork"
+version = "0.2.0"
+description = "Zosma Cowork — desktop AI coworker powered by the metaagents engine"
 authors = ["zosmaai"]
 edition.workspace = true
 rust-version.workspace = true
@@ -22,7 +22,7 @@ serde_json = { workspace = true }
 log = { workspace = true }
 tokio = { workspace = true, features = ["process", "io-util", "sync", "rt-multi-thread"] }
 
-# MetaAgents engine (Phase A: scaffolded but unused; wired up in Phase D)
+# MetaAgents engine — in-process agent runtime
 metaagents = { path = "../metaagents" }
 
 # Tauri

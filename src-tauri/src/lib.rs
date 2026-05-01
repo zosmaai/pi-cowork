@@ -1,4 +1,4 @@
-//! Tauri backend for pi-cowork (Phase D: engine-backed).
+//! Tauri backend for Zosma Cowork — thin shell over the metaagents engine.
 //!
 //! This module wires the `metaagents` engine into Tauri commands. The engine
 //! replaces the old subprocess approach (`pi --mode json`) with in-process

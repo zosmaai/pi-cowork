@@ -31,7 +31,7 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-6 p-8">
 				<div className="text-6xl mb-2">🥧</div>
-				<h1 className="text-3xl font-bold text-foreground">Pi Cowork</h1>
+				<h1 className="text-3xl font-bold text-foreground">Zosma Cowork</h1>
 				<div className="flex items-center gap-2 text-emerald-500">
 					<span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
 					<span>pi is installed</span>
@@ -57,13 +57,13 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 	return (
 		<div className="flex flex-col items-center justify-center h-full gap-6 p-8">
 			<div className="text-6xl mb-2">🥧</div>
-			<h1 className="text-3xl font-bold text-foreground">Pi Cowork</h1>
+			<h1 className="text-3xl font-bold text-foreground">Zosma Cowork</h1>
 			<div className="flex items-center gap-2 text-amber-500">
 				<span className="inline-block w-2 h-2 rounded-full bg-amber-500" />
 				<span>pi is not installed</span>
 			</div>
 			<p className="text-muted-foreground max-w-md text-center">
-				Pi Cowork requires the pi coding agent to be installed globally. Click below to install it
+				Zosma Cowork requires the pi coding agent to be installed globally. Click below to install it
 				via npm.
 			</p>
 			<button
