@@ -17,7 +17,7 @@
 - **ストリーミングレスポンス** — エージェントが考え、書き、ツールを呼び出すのをリアルタイムで確認
 - **思考ブロック** — 展開可能なモデルの推論プロセス
 - **ツール呼び出しタイムライン** — 引数と結果付きでbash/edit/writeツール呼び出しをリアルタイム表示
-- **セッション管理** — `~/.pi/cowork/` に保存される永続的なチャットセッション
+- **セッション管理** — `~/.zosmaai/cowork/` に保存される永続的なチャットセッション
 - **ライト＆ダークモード** — 温かみのあるクリームライトモードとチャコールダークモード
 - **キーボードショートカット** — `Cmd/Ctrl+Shift+K` でフォーカス、`Cmd/Ctrl+N` で新規セッション
 - **中止とステアリング** — ターン途中で実行中のエージェントを停止、フォローアップステアリングメッセージを送信
@@ -40,9 +40,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — 初回設定用に一度インストール：`npm install -g @mariozechner/pi-coding-agent`、その後 `pi` を一度実行して `~/.pi/agent/settings.json` と `~/.pi/agent/models.json` を生成
-
-> **注意：** pi CLI は初期設定にのみ必要です。アプリは実行時に `pi_agent_rust` SDK を直接使用します — 通常動作中はサブプロセスやCLI呼び出しは不要です。
 
 ### インストールと実行
 
@@ -61,10 +58,10 @@ npm run dev
 
 | 項目 | 場所 | 備考 |
 |------|------|------|
-| LLM プロバイダーと API キー | `~/.pi/agent/settings.json` | 初回 `pi` 実行時に作成 |
-| モデル定義 | `~/.pi/agent/models.json` | 初回 `pi` 実行時に作成 |
-| 拡張機能とスキル | `~/.pi/agent/extensions/` | `pi install` でインストール |
-| セッション履歴 | `~/.pi/cowork/` | pi-cowork が管理 |
+| LLM プロバイダーと API キー | `~/.zosmaai/agent/settings.json` | アプリが管理 |
+| モデル定義 | `~/.zosmaai/agent/models.json` | アプリが管理 |
+| 拡張機能とスキル | `~/.zosmaai/agent/extensions/` | ローカル拡張ディレクトリ |
+| セッション履歴 | `~/.zosmaai/cowork/` | pi-cowork が管理 |
 
 ## ライセンス
 

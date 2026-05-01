@@ -17,7 +17,7 @@
 - **스트리밍 응답** — 에이전트가 생각하고, 쓰고, 도구를 호출하는 것을 실시간으로 확인
 - **사고 블록** — 확장 가능한 모델의 추론 과정
 - **도구 호출 타임라인** — 인수와 결과가 포함된 실시간 bash/edit/write 도구 호출
-- **세션 관리** — `~/.pi/cowork/`에 저장되는 지속적인 채팅 세션
+- **세션 관리** — `~/.zosmaai/cowork/`에 저장되는 지속적인 채팅 세션
 - **라이트 & 다크 모드** — 따뜻한 크림 라이트 모드와 따뜻한 차콜 다크 모드
 - **키보드 단축키** — `Cmd/Ctrl+Shift+K`로 포커스, `Cmd/Ctrl+N`으로 새 세션
 - **중단 및 스티어링** — 턴 중간에 실행 중인 에이전트 중지, 후속 스티어링 메시지 전송
@@ -40,9 +40,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — 초기 설정을 위해 한 번 설치: `npm install -g @mariozechner/pi-coding-agent`, 그 후 `pi`를 한 번 실행하여 `~/.pi/agent/settings.json` 및 `~/.pi/agent/models.json` 생성
-
-> **참고:** pi CLI는 초기 설정에만 필요합니다. 앱은 런타임에 `pi_agent_rust` SDK를 직접 사용합니다 — 정상 작동 중에는 서브프로세스나 CLI 호출이 필요하지 않습니다.
 
 ### 설치 및 실행
 
@@ -61,10 +58,10 @@ npm run dev
 
 | 항목 | 위치 | 참고 |
 |------|------|------|
-| LLM 제공자 및 API 키 | `~/.pi/agent/settings.json` | 첫 `pi` 실행 시 생성 |
-| 모델 정의 | `~/.pi/agent/models.json` | 첫 `pi` 실행 시 생성 |
-| 확장 및 스킬 | `~/.pi/agent/extensions/` | `pi install`로 설치 |
-| 세션 기록 | `~/.pi/cowork/` | pi-cowork에서 관리 |
+| LLM 제공자 및 API 키 | `~/.zosmaai/agent/settings.json` | 앱에서 관리 |
+| 모델 정의 | `~/.zosmaai/agent/models.json` | 앱에서 관리 |
+| 확장 및 스킬 | `~/.zosmaai/agent/extensions/` | 로컬 확장 디렉토리 |
+| 세션 기록 | `~/.zosmaai/cowork/` | pi-cowork에서 관리 |
 
 ## 라이선스
 

@@ -17,7 +17,7 @@
 - **Réponses en streaming** — Observez l'agent penser, écrire et appeler des outils en temps réel
 - **Blocs de pensée** — Raisonnement extensible du modèle
 - **Timeline des appels d'outils** — Appels bash/edit/write en direct avec arguments et résultats
-- **Gestion de sessions** — Sessions de chat persistantes sauvegardées dans `~/.pi/cowork/`
+- **Gestion de sessions** — Sessions de chat persistantes sauvegardées dans `~/.zosmaai/cowork/`
 - **Mode clair & sombre** — Mode clair crème chaude et mode sombre charbon chaud
 - **Raccourcis clavier** — `Cmd/Ctrl+Shift+K` pour focus, `Cmd/Ctrl+N` pour nouvelle session
 - **Arrêter & piloter** — Arrêter un agent en cours en milieu de tour, envoyer des messages de pilotage
@@ -40,9 +40,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — installer une fois pour la configuration initiale : `npm install -g @mariozechner/pi-coding-agent`, puis exécuter `pi` une fois pour générer `~/.pi/agent/settings.json` et `~/.pi/agent/models.json`
-
-> **Note :** Le CLI pi n'est nécessaire que pour la configuration initiale. L'application utilise le SDK `pi_agent_rust` directement à l'exécution — aucun sous-processus ni appel CLI pendant le fonctionnement normal.
 
 ### Installer & Exécuter
 
@@ -61,10 +58,10 @@ npm run dev
 
 | Quoi | Emplacement | Notes |
 |-----|-------------|-------|
-| Fournisseurs LLM et clés API | `~/.pi/agent/settings.json` | Créé par `pi` au premier lancement |
-| Définitions des modèles | `~/.pi/agent/models.json` | Créé par `pi` au premier lancement |
-| Extensions et compétences | `~/.pi/agent/extensions/` | Installées via `pi install` |
-| Historique des sessions | `~/.pi/cowork/` | Géré par pi-cowork |
+| Fournisseurs LLM et clés API | `~/.zosmaai/agent/settings.json` | Géré par l'application |
+| Définitions des modèles | `~/.zosmaai/agent/models.json` | Géré par l'application |
+| Extensions et compétences | `~/.zosmaai/agent/extensions/` | Répertoire local d'extensions |
+| Historique des sessions | `~/.zosmaai/cowork/` | Géré par pi-cowork |
 
 ## Licence
 

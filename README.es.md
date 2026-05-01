@@ -17,7 +17,7 @@
 - **Respuestas en streaming** — Observa al agente pensar, escribir y llamar herramientas en tiempo real
 - **Bloques de pensamiento** — Razonamiento expandible del modelo
 - **Línea de tiempo de llamadas a herramientas** — Llamadas bash/edit/write en tiempo real con argumentos y resultados
-- **Gestión de sesiones** — Sesiones de chat persistentes guardadas en `~/.pi/cowork/`
+- **Gestión de sesiones** — Sesiones de chat persistentes guardadas en `~/.zosmaai/cowork/`
 - **Modo claro y oscuro** — Modo claro crema cálido y modo oscuro carbón cálido
 - **Atajos de teclado** — `Cmd/Ctrl+Shift+K` para enfocar, `Cmd/Ctrl+N` para nueva sesión
 - **Abortar y dirigir** — Detener un agente en ejecución a mitad de turno, enviar mensajes de dirección de seguimiento
@@ -40,9 +40,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — instalar una vez para inicializar la configuración: `npm install -g @mariozechner/pi-coding-agent`, luego ejecutar `pi` una vez para generar `~/.pi/agent/settings.json` y `~/.pi/agent/models.json`
-
-> **Nota:** El CLI de pi solo se necesita para la configuración inicial. La aplicación usa el SDK `pi_agent_rust` directamente en tiempo de ejecución — no se requiere subproceso ni invocación de CLI durante el funcionamiento normal.
 
 ### Instalar y ejecutar
 
@@ -61,10 +58,10 @@ npm run dev
 
 | Qué | Ubicación | Notas |
 |-----|-----------|-------|
-| Proveedores LLM y claves API | `~/.pi/agent/settings.json` | Creado por `pi` en la primera ejecución |
-| Definiciones de modelos | `~/.pi/agent/models.json` | Creado por `pi` en la primera ejecución |
-| Extensiones y habilidades | `~/.pi/agent/extensions/` | Instaladas vía `pi install` |
-| Historial de sesiones | `~/.pi/cowork/` | Gestionado por pi-cowork |
+| Proveedores LLM y claves API | `~/.zosmaai/agent/settings.json` | Gestionado por la app |
+| Definiciones de modelos | `~/.zosmaai/agent/models.json` | Gestionado por la app |
+| Extensiones y habilidades | `~/.zosmaai/agent/extensions/` | Directorio local de extensiones |
+| Historial de sesiones | `~/.zosmaai/cowork/` | Gestionado por pi-cowork |
 
 ## Licencia
 

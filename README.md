@@ -17,7 +17,7 @@
 - **Streaming responses** — See the agent think, write, and call tools in real-time
 - **Thinking blocks** — Expandable reasoning from the model
 - **Tool call timeline** — Live bash/edit/write tool calls with args and results
-- **Session management** — Persistent chat sessions saved to `~/.pi/cowork/`
+- **Session management** — Persistent chat sessions saved to `~/.zosmaai/cowork/`
 - **Light & dark mode** — Warm cream light mode, warm charcoal dark mode
 - **Keyboard shortcuts** — `Cmd/Ctrl+Shift+K` to focus, `Cmd/Ctrl+N` for new session
 - **Abort & steering** — Stop a running agent mid-turn, send follow-up steering messages
@@ -65,9 +65,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — install once to bootstrap config: `npm install -g @mariozechner/pi-coding-agent` then run `pi` once to generate `~/.pi/agent/settings.json` and `~/.pi/agent/models.json`
-
-> **Note:** The pi CLI is only needed for initial setup. The app uses the `pi_agent_rust` SDK directly at runtime — no subprocess or CLI invocation during normal operation.
 
 ### Quick Start
 
@@ -104,10 +101,10 @@ cargo clippy --workspace  # Lint Rust code
 
 | What | Location | Notes |
 |------|----------|-------|
-| LLM providers & API keys | `~/.pi/agent/settings.json` | Created by `pi` on first run |
-| Model definitions | `~/.pi/agent/models.json` | Created by `pi` on first run |
-| Extensions & skills | `~/.pi/agent/extensions/` | Installed via `pi install` |
-| Session history | `~/.pi/cowork/` | Managed by pi-cowork |
+| LLM providers & API keys | `~/.zosmaai/agent/settings.json` | Managed by the app |
+| Model definitions | `~/.zosmaai/agent/models.json` | Managed by the app |
+| Extensions & skills | `~/.zosmaai/agent/extensions/` | Local extensions directory |
+| Session history | `~/.zosmaai/cowork/` | Managed by pi-cowork |
 
 ## Event Streaming
 

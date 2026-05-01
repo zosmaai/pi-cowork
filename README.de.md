@@ -17,7 +17,7 @@
 - **Streaming-Antworten** — Beobachte den Agenten in Echtzeit beim Denken, Schreiben und Tool-Aufrufen
 - **Denkblöcke** — Erweiterbares Modell-Reasoning
 - **Tool-Aufruf-Zeitleiste** — Live bash/edit/write Tool-Aufrufe mit Argumenten und Ergebnissen
-- **Sitzungsverwaltung** — Persistente Chat-Sitzungen gespeichert in `~/.pi/cowork/`
+- **Sitzungsverwaltung** — Persistente Chat-Sitzungen gespeichert in `~/.zosmaai/cowork/`
 - **Hell- & Dunkelmodus** — Warmer Creme-Hellmodus und warmer Kohle-Dunkelmodus
 - **Tastaturkürzel** — `Cmd/Ctrl+Shift+K` zum Fokussieren, `Cmd/Ctrl+N` für neue Sitzung
 - **Abbrechen & Steuern** — Laufenden Agenten mid-turn stoppen, Folge-Steuerungsnachrichten senden
@@ -40,9 +40,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — Einmal installieren zur Ersteinrichtung: `npm install -g @mariozechner/pi-coding-agent`, dann `pi` einmal ausführen um `~/.pi/agent/settings.json` und `~/.pi/agent/models.json` zu erzeugen
-
-> **Hinweis:** Die pi CLI wird nur für die Ersteinrichtung benötigt. Die App nutzt das `pi_agent_rust` SDK direkt zur Laufzeit — keine Subprozesse oder CLI-Aufrufe während des normalen Betriebs.
 
 ### Installieren & Ausführen
 
@@ -61,10 +58,10 @@ npm run dev
 
 | Was | Speicherort | Hinweise |
 |-----|-------------|----------|
-| LLM-Anbieter & API-Schlüssel | `~/.pi/agent/settings.json` | Von `pi` beim ersten Lauf erstellt |
-| Modelldefinitionen | `~/.pi/agent/models.json` | Von `pi` beim ersten Lauf erstellt |
-| Erweiterungen & Skills | `~/.pi/agent/extensions/` | Installiert via `pi install` |
-| Sitzungsverlauf | `~/.pi/cowork/` | Verwaltet von pi-cowork |
+| LLM-Anbieter & API-Schlüssel | `~/.zosmaai/agent/settings.json` | Von der App verwaltet |
+| Modelldefinitionen | `~/.zosmaai/agent/models.json` | Von der App verwaltet |
+| Erweiterungen & Skills | `~/.zosmaai/agent/extensions/` | Lokales Erweiterungsverzeichnis |
+| Sitzungsverlauf | `~/.zosmaai/cowork/` | Verwaltet von pi-cowork |
 
 ## Lizenz
 

@@ -285,7 +285,7 @@ export function chatMessagesToEvents(
 
 async function sessionDir(): Promise<string> {
 	const home = await homeDir();
-	return join(home, "pi-cowork", "sessions");
+	return join(home, ".zosmaai", "cowork");
 }
 
 function extractTitle(lines: string[]): string {
