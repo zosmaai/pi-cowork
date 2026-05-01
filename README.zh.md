@@ -17,7 +17,7 @@
 - **流式响应** — 实时观看代理思考、编写代码和调用工具
 - **思维块** — 可展开查看模型的推理过程
 - **工具调用时间线** — 实时显示 bash/edit/write 工具调用及其参数和结果
-- **会话管理** — 持久化聊天会话保存至 `~/.pi/cowork/`
+- **会话管理** — 持久化聊天会话保存至 `~/.zosmaai/cowork/`
 - **亮色与暗色模式** — 暖色奶油亮模式和暖色炭灰暗模式
 - **键盘快捷键** — `Cmd/Ctrl+Shift+K` 聚焦输入框，`Cmd/Ctrl+N` 新建会话
 - **中止与引导** — 中途停止运行中的代理，发送后续引导消息
@@ -40,9 +40,6 @@
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+
-- [pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust) — 安装一次以初始化配置：`npm install -g @mariozechner/pi-coding-agent`，然后运行一次 `pi` 以生成 `~/.pi/agent/settings.json` 和 `~/.pi/agent/models.json`
-
-> **注意：** pi CLI 仅用于初始设置。应用在运行时直接使用 `pi_agent_rust` SDK，正常操作中无需子进程或 CLI 调用。
 
 ### 安装与运行
 
@@ -61,10 +58,10 @@ npm run dev
 
 | 内容 | 位置 | 说明 |
 |------|------|------|
-| LLM 提供商和 API 密钥 | `~/.pi/agent/settings.json` | 首次运行 `pi` 时创建 |
-| 模型定义 | `~/.pi/agent/models.json` | 首次运行 `pi` 时创建 |
-| 扩展和技能 | `~/.pi/agent/extensions/` | 通过 `pi install` 安装 |
-| 会话历史 | `~/.pi/cowork/` | 由 pi-cowork 管理 |
+| LLM 提供商和 API 密钥 | `~/.zosmaai/agent/settings.json` | 由应用管理 |
+| 模型定义 | `~/.zosmaai/agent/models.json` | 由应用管理 |
+| 扩展和技能 | `~/.zosmaai/agent/extensions/` | 本地扩展目录 |
+| 会话历史 | `~/.zosmaai/cowork/` | 由 pi-cowork 管理 |
 
 ## 许可证
 

@@ -8,8 +8,6 @@ Thank you for your interest in contributing! This document will help you get sta
 
 - [Node.js](https://nodejs.org/) 22+
 - [Rust](https://rustup.rs/) 1.85+ (the `metaagents` engine pulls in `pi_agent_rust` which has MSRV 1.85)
-- [pi coding agent](https://github.com/badlogic/pi-mono): `npm install -g @mariozechner/pi-coding-agent`
-  *(temporary — used by the welcome flow and as the source of truth for `~/.pi/agent/extensions/`. The runtime itself runs in-process via the `metaagents` crate from Phase D onward.)*
 
 On Linux you also need the system libs Tauri requires:
 
