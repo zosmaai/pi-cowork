@@ -127,11 +127,12 @@ export function ProviderSetup({ providers, configuredProviders, onSave, onCancel
 							)}
 
 							<div>
-								<label className="text-xs text-muted-foreground mb-1.5 block">
+								<label htmlFor="api-key-input" className="text-xs text-muted-foreground mb-1.5 block">
 									API Key <span className="text-destructive">*</span>
 								</label>
 								<div className="relative">
 									<input
+									id="api-key-input"
 										type={showKey ? "text" : "password"}
 										value={apiKey}
 										onChange={(e) => setApiKey(e.target.value)}

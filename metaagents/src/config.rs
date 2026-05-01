@@ -237,7 +237,8 @@ pub fn zosmaai_agent_dir() -> PathBuf {
 /// missing directories.
 pub fn ensure_agent_dir() -> Result<PathBuf, String> {
     let dir = zosmaai_agent_dir();
-    std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create agent dir {}: {e}", dir.display()))?;
+    std::fs::create_dir_all(&dir)
+        .map_err(|e| format!("Failed to create agent dir {}: {e}", dir.display()))?;
     Ok(dir)
 }
 
@@ -426,8 +427,7 @@ pub fn list_auth_providers() -> Vec<String> {
         return Vec::new();
     };
 
-    obj
-        .iter()
+    obj.iter()
         .filter(|(_, entry)| {
             entry.get("type").and_then(|t| t.as_str()) == Some("api_key")
                 && entry
