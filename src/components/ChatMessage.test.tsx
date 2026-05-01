@@ -36,7 +36,7 @@ describe("ChatMessageItem", () => {
 
 	it("renders assistant message", () => {
 		render(<ChatMessageItem message={createMessage({ role: "assistant" })} />);
-		expect(screen.getAllByText("Pi").length).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByText("Zosma").length).toBeGreaterThanOrEqual(1);
 		expect(screen.getByText("Hello world")).toBeInTheDocument();
 	});
 
@@ -46,7 +46,7 @@ describe("ChatMessageItem", () => {
 		);
 		expect(screen.getByText("System update")).toBeInTheDocument();
 		expect(screen.queryByText("You")).not.toBeInTheDocument();
-		expect(screen.queryByText("Pi")).not.toBeInTheDocument();
+		expect(screen.queryByText("Zosma")).not.toBeInTheDocument();
 	});
 
 	it("renders markdown content", () => {

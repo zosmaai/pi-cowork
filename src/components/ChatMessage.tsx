@@ -69,7 +69,7 @@ export function ChatMessageItem({ message, isLatest = false }: ChatMessageProps)
 							color: "hsl(var(--chat-avatar-assistant-fg))",
 						}}
 					>
-						Pi
+						Z
 					</div>
 				)}
 			</div>
@@ -79,7 +79,7 @@ export function ChatMessageItem({ message, isLatest = false }: ChatMessageProps)
 				{/* Header row */}
 				<div className="flex items-center gap-2 mb-0.5">
 					<span className="text-xs font-medium" style={{ color: "hsl(var(--foreground))" }}>
-						{isUser ? "You" : "Pi"}
+						{isUser ? "You" : "Zosma"}
 					</span>
 					<span className="text-[10px] text-muted-foreground tabular-nums">
 						{new Date(message.timestamp).toLocaleTimeString([], {

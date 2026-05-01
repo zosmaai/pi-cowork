@@ -57,7 +57,7 @@ export function Sidebar({
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-							Pi
+							Z
 						</div>
 						<div className="leading-tight">
 							<div className="text-xs font-medium text-sidebar-foreground">Zosma Cowork</div>

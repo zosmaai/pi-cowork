@@ -52,8 +52,8 @@ export const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(
 		}
 
 		const placeholder = disabled
-			? "Pi is thinking..."
-			: "Message Pi... (Enter to send, Shift+Enter for newline)";
+			? "Zosma Cowork is thinking..."
+			: "Message Zosma Cowork... (Enter to send, Shift+Enter for newline)";
 
 		return (
 			<form onSubmit={handleSubmit} className="p-4">
@@ -85,7 +85,7 @@ export const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(
 							/>
 						) : (
 							<span className="text-xs" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
-								{modelLabel || "Pi"}
+								{modelLabel || "Zosma"}
 							</span>
 						)}
 						<button
