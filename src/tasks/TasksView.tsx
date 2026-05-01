@@ -9,7 +9,7 @@ export function TasksView() {
 			<div className="text-center">
 				<h2 className="text-lg font-medium text-foreground mb-1">Tasks</h2>
 				<p className="text-sm max-w-sm">
-					Scheduled prompts and recurring tasks will appear here. Ask Pi to schedule something for
+					Scheduled prompts and recurring tasks will appear here. Ask Zosma Cowork to schedule something for
 					you.
 				</p>
 			</div>

@@ -700,7 +700,7 @@ export function SettingsView() {
 							<h3 className="text-sm font-medium text-foreground">Home Directory</h3>
 						</div>
 						<p className="text-xs text-muted-foreground font-mono bg-muted rounded-lg px-3 py-2">
-							~/pi-cowork
+							~/zosma-cowork
 						</p>
 					</div>
 
@@ -715,14 +715,14 @@ export function SettingsView() {
 								<span className="text-foreground">0.2.0</span>
 							</div>
 							<div className="flex justify-between">
-								<span>Pi Status</span>
+								<span>Agent Status</span>
 								<span className="text-foreground">
 									{status?.installed ? "Installed" : "Not installed"}
 								</span>
 							</div>
 							{status?.version && (
 								<div className="flex justify-between">
-									<span>Pi Version</span>
+									<span>Agent Version</span>
 									<span className="text-foreground">{status.version}</span>
 								</div>
 							)}

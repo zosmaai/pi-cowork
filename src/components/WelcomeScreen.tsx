@@ -34,7 +34,7 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 				<h1 className="text-3xl font-bold text-foreground">Zosma Cowork</h1>
 				<div className="flex items-center gap-2 text-emerald-500">
 					<span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-					<span>pi is installed</span>
+					<span>Agent is installed</span>
 				</div>
 				{status.version && <p className="text-muted-foreground text-sm">{status.version}</p>}
 				{status.path && <p className="text-muted-foreground text-xs font-mono">{status.path}</p>}
@@ -60,7 +60,7 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 			<h1 className="text-3xl font-bold text-foreground">Zosma Cowork</h1>
 			<div className="flex items-center gap-2 text-amber-500">
 				<span className="inline-block w-2 h-2 rounded-full bg-amber-500" />
-				<span>pi is not installed</span>
+				<span>Agent is not installed</span>
 			</div>
 			<p className="text-muted-foreground max-w-md text-center">
 				Zosma Cowork requires the pi coding agent to be installed globally. Click below to install it
@@ -72,7 +72,7 @@ export function WelcomeScreen({ status, onRefetch }: WelcomeScreenProps) {
 				disabled={installing}
 				className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
 			>
-				{installing ? "Installing..." : "Install pi coding agent"}
+				{installing ? "Installing..." : "Install coding agent"}
 			</button>
 			{installOutput && (
 				<pre className="mt-4 p-4 rounded-lg bg-secondary text-foreground text-xs font-mono max-w-lg w-full max-h-48 overflow-auto border">

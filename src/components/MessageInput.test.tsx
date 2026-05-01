@@ -6,7 +6,7 @@ import { MessageInput } from "./MessageInput";
 describe("MessageInput", () => {
 	it("renders textarea and send button", () => {
 		render(<MessageInput onSend={vi.fn()} />);
-		expect(screen.getByPlaceholderText(/Message Pi/i)).toBeInTheDocument();
+		expect(screen.getByPlaceholderText(/Message Zosma Cowork/i)).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /Send/i })).toBeInTheDocument();
 	});
 
@@ -14,7 +14,7 @@ describe("MessageInput", () => {
 		const onSend = vi.fn();
 		const user = userEvent.setup();
 		render(<MessageInput onSend={onSend} />);
-		const textarea = screen.getByPlaceholderText(/Message Pi/i);
+		const textarea = screen.getByPlaceholderText(/Message Zosma Cowork/i);
 		await user.type(textarea, "Hello pi");
 		await user.keyboard("{Enter}");
 		expect(onSend).toHaveBeenCalledWith("Hello pi");
@@ -24,7 +24,7 @@ describe("MessageInput", () => {
 		const onSend = vi.fn();
 		const user = userEvent.setup();
 		render(<MessageInput onSend={onSend} />);
-		const textarea = screen.getByPlaceholderText(/Message Pi/i);
+		const textarea = screen.getByPlaceholderText(/Message Zosma Cowork/i);
 		await user.type(textarea, "Hello pi");
 		await user.keyboard("{Shift>}{Enter}{/Shift}");
 		expect(onSend).not.toHaveBeenCalled();
@@ -35,7 +35,7 @@ describe("MessageInput", () => {
 		const onSend = vi.fn();
 		const user = userEvent.setup();
 		render(<MessageInput onSend={onSend} />);
-		const textarea = screen.getByPlaceholderText(/Message Pi/i);
+		const textarea = screen.getByPlaceholderText(/Message Zosma Cowork/i);
 		await user.type(textarea, "Hello pi");
 		await user.keyboard("{Enter}");
 		expect(textarea).toHaveValue("");
@@ -45,7 +45,7 @@ describe("MessageInput", () => {
 		const onSend = vi.fn();
 		const user = userEvent.setup();
 		render(<MessageInput onSend={onSend} />);
-		const textarea = screen.getByPlaceholderText(/Message Pi/i);
+		const textarea = screen.getByPlaceholderText(/Message Zosma Cowork/i);
 		await user.type(textarea, "   ");
 		await user.keyboard("{Enter}");
 		expect(onSend).not.toHaveBeenCalled();
@@ -53,7 +53,7 @@ describe("MessageInput", () => {
 
 	it("disables textarea and button when disabled prop is true", () => {
 		render(<MessageInput onSend={vi.fn()} disabled />);
-		expect(screen.getByPlaceholderText(/Pi is thinking/i)).toBeDisabled();
+		expect(screen.getByPlaceholderText(/Zosma Cowork is thinking/i)).toBeDisabled();
 		expect(screen.getByRole("button", { name: /Send/i })).toBeDisabled();
 	});
 
@@ -66,7 +66,7 @@ describe("MessageInput", () => {
 		const onSend = vi.fn();
 		const user = userEvent.setup();
 		render(<MessageInput onSend={onSend} />);
-		const textarea = screen.getByPlaceholderText(/Message Pi/i);
+		const textarea = screen.getByPlaceholderText(/Message Zosma Cowork/i);
 		await user.type(textarea, "Click send");
 		await user.click(screen.getByRole("button", { name: /Send/i }));
 		expect(onSend).toHaveBeenCalledWith("Click send");

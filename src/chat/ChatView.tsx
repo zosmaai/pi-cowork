@@ -119,7 +119,7 @@ export function ChatView({
 									className="text-sm max-w-md text-center"
 									style={{ color: "hsl(var(--muted-foreground))" }}
 								>
-									Start a new session to chat with Pi.
+									Start a new session to chat with Zosma Cowork.
 								</p>
 							</>
 						)}
