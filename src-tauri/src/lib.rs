@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use metaagents::config::{self, ConfigSnapshot, ModelInfo, ProviderInfo};
 use metaagents::engine::MetaAgentsEngine;
-use metaagents::events::CoworkEvent;
+use metaagents::events::{categorize_engine_error, CoworkErrorPayload, CoworkEvent};
 use metaagents::extensions::ExtensionInfo;
 use serde::{Deserialize, Serialize};
 
@@ -100,6 +100,11 @@ async fn create_session_with_model(
 }
 
 /// Send a prompt to an existing session. Events stream through the Tauri channel.
+///
+/// Errors from the SDK/engine are sent through the channel as `CoworkEvent::Error`
+/// with structured `CoworkErrorPayload` fields (provider, model, code, retryable).
+/// The invoke always returns `Ok(())` — the frontend should listen for error
+/// events on the channel rather than catching invoke exceptions.
 #[tauri::command]
 async fn send_prompt(
     session_id: String,
@@ -107,11 +112,16 @@ async fn send_prompt(
     channel: tauri::ipc::Channel<CoworkEvent>,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
-    let (mut event_rx, join_handle) = state
-        .engine
-        .send_prompt(session_id, prompt)
-        .await
-        .map_err(|e| e.to_string())?;
+    let (mut event_rx, join_handle) = match state.engine.send_prompt(session_id, prompt).await {
+        Ok((rx, jh)) => (rx, jh),
+        Err(e) => {
+            // Engine couldn't start the prompt (e.g., session not found).
+            // Send a structured error through the channel.
+            let payload = categorize_engine_error(&e.to_string());
+            let _ = channel.send(CoworkEvent::Error(payload));
+            return Ok(());
+        }
+    };
 
     // Forward engine events to the Tauri channel until the stream ends.
     while let Some(event) = event_rx.recv().await {
@@ -122,11 +132,27 @@ async fn send_prompt(
     }
 
     // Check the final result for errors.
-    join_handle
-        .await
-        .map_err(|e| format!("prompt task panicked: {e}"))?
-        .map_err(|e| e.to_string())?;
+    // If the prompt failed, send a structured error through the channel
+    // rather than returning an invoke error. This lets the frontend handle
+    // errors consistently via the event stream.
+    match join_handle.await {
+        Ok(Ok(_)) => {}
+        Ok(Err(engine_err)) => {
+            let payload = categorize_engine_error(&engine_err.to_string());
+            let _ = channel.send(CoworkEvent::Error(payload));
+        }
+        Err(join_err) => {
+            let payload =
+                CoworkErrorPayload::new("Internal error: the prompt task panicked".to_string())
+                    .with_details(format!("{join_err}"))
+                    .with_code("internal");
+            let _ = channel.send(CoworkEvent::Error(payload));
+        }
+    }
 
+    // Always return Ok — errors are communicated via the event channel.
+    // Panics (task panics) will still propagate as a 500-style invoke error
+    // but we've already sent a friendly error event to the frontend first.
     Ok(())
 }
 
@@ -196,6 +222,69 @@ async fn set_active_model(
 /// Reload config from disk (call after settings change).
 #[tauri::command]
 async fn reload_config(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    let fresh = config::load_config();
+    let mut guard = state.config.write().unwrap_or_else(|e| e.into_inner());
+    *guard = fresh;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Commands — provider configuration (models.json editing)
+// ---------------------------------------------------------------------------
+
+/// Get the raw models.json provider configuration for the frontend editor.
+///
+/// Returns the full content of models.json as a JSON value, or an empty
+/// `{"providers":{}}` if the file doesn't exist.
+#[tauri::command]
+async fn get_models_config() -> Result<serde_json::Value, String> {
+    Ok(config::read_models_json_raw())
+}
+
+/// Save a complete provider configuration to models.json.
+///
+/// This is called after the frontend finishes editing providers. It
+/// replaces the entire file content, so the frontend must send the
+/// complete state.
+#[tauri::command]
+async fn save_models_config(
+    content: serde_json::Value,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    config::write_models_json_raw(&content)?;
+    // Reload config so the engine picks up changes
+    let fresh = config::load_config();
+    let mut guard = state.config.write().unwrap_or_else(|e| e.into_inner());
+    *guard = fresh;
+    Ok(())
+}
+
+/// Add or update a single provider in models.json.
+///
+/// `provider_id` is the key (e.g., "openai", "anthropic").
+/// `config` is a JSON object with the provider settings.
+#[tauri::command]
+async fn upsert_provider(
+    provider_id: String,
+    config_json: serde_json::Value,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    config::upsert_provider(&provider_id, &config_json)?;
+    // Reload config
+    let fresh = config::load_config();
+    let mut guard = state.config.write().unwrap_or_else(|e| e.into_inner());
+    *guard = fresh;
+    Ok(())
+}
+
+/// Delete a provider from models.json.
+#[tauri::command]
+async fn delete_provider_cmd(
+    provider_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    config::delete_provider(&provider_id)?;
+    // Reload config
     let fresh = config::load_config();
     let mut guard = state.config.write().unwrap_or_else(|e| e.into_inner());
     *guard = fresh;
@@ -303,6 +392,11 @@ pub fn run() {
             list_providers,
             set_active_model,
             reload_config,
+            // Provider configuration
+            get_models_config,
+            save_models_config,
+            upsert_provider,
+            delete_provider_cmd,
             // Pi CLI (welcome flow)
             check_pi_status,
             install_pi,
