@@ -1,9 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import type { ModelInfo } from "@/types";
+import { ModelSelector } from "./ModelSelector";
 
 interface MessageInputProps {
 	onSend: (message: string) => void;
 	disabled?: boolean;
 	modelLabel?: string;
+	models?: ModelInfo[];
+	currentModelId?: string;
+	onModelSelect?: (provider: string, modelId: string) => void;
 }
 
 export interface MessageInputHandle {
@@ -11,7 +16,7 @@ export interface MessageInputHandle {
 }
 
 export const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(
-	({ onSend, disabled, modelLabel }, ref) => {
+	({ onSend, disabled, modelLabel, models, currentModelId, onModelSelect }, ref) => {
 		const [text, setText] = useState("");
 		const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -72,9 +77,17 @@ export const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(
 						className="w-full resize-none rounded-t-2xl bg-transparent px-4 pt-3 pb-2 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
 					/>
 					<div className="flex items-center justify-between px-3 pb-3">
-						<span className="text-xs" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
-							{modelLabel || "Pi"}
-						</span>
+						{models && onModelSelect ? (
+							<ModelSelector
+								models={models}
+								currentModelId={currentModelId}
+								onSelect={onModelSelect}
+							/>
+						) : (
+							<span className="text-xs" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+								{modelLabel || "Pi"}
+							</span>
+						)}
 						<button
 							type="submit"
 							disabled={disabled || !text.trim()}

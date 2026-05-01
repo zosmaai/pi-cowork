@@ -3,6 +3,7 @@ import { RightPanel } from "@/components/RightPanel";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { usePiStatus } from "@/hooks/usePiStatus";
 import { type StreamState, usePiStream } from "@/hooks/usePiStream";
+import { useProviders } from "@/hooks/useProviders";
 import { useSessions } from "@/hooks/useSessions";
 import {
 	chatMessagesToEvents,
@@ -14,6 +15,7 @@ import { SettingsView } from "@/settings/SettingsView";
 import { Sidebar } from "@/sidebar/Sidebar";
 import { TasksView } from "@/tasks/TasksView";
 import type { ChatMessage } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -41,6 +43,7 @@ function App() {
 		deleteSession,
 		refresh: refreshSessions,
 	} = useSessions();
+	const { config } = useProviders();
 
 	const [activeView, setActiveView] = useState<"chat" | "tasks" | "settings">("chat");
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
@@ -260,6 +263,19 @@ function App() {
 						error={streamState.error}
 						onSend={handleSend}
 						onAbort={abortStream}
+						models={config?.models}
+						currentModelId={config?.defaultModel ?? undefined}
+						onModelSelect={async (provider: string, modelId: string) => {
+							if (currentSessionIdRef.current) {
+								await invoke("set_active_model", {
+									payload: {
+										sessionId: currentSessionIdRef.current,
+										provider,
+										modelId,
+									},
+								});
+							}
+						}}
 					/>
 				)}
 
