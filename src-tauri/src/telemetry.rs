@@ -172,9 +172,11 @@ fn load_settings() -> TelemetrySettings {
 fn save_settings(settings: &TelemetrySettings) -> Result<(), String> {
     let path = settings_path()?;
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create settings dir: {e}"))?;
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create settings dir: {e}"))?;
     }
-    let content = serde_json::to_string_pretty(settings).map_err(|e| format!("Failed to serialize settings: {e}"))?;
+    let content = serde_json::to_string_pretty(settings)
+        .map_err(|e| format!("Failed to serialize settings: {e}"))?;
     std::fs::write(&path, content).map_err(|e| format!("Failed to write settings: {e}"))?;
     Ok(())
 }
@@ -207,7 +209,13 @@ pub fn telemetry_set_enabled(enabled: bool) -> Result<(), String> {
 #[tauri::command]
 pub fn telemetry_reset_device_id() -> Result<String, String> {
     let mut settings = load_settings();
-    settings.device_id = format!("anon_{:?}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0));
+    settings.device_id = format!(
+        "anon_{:?}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0)
+    );
     save_settings(&settings)?;
     Ok(settings.device_id.clone())
 }
@@ -301,7 +309,10 @@ pub fn get_app_logs(lines: Option<usize>) -> Result<Vec<String>, String> {
     // Tauri log plugin writes to platform-specific locations.
     // For dev, we just return a placeholder. In production, read from the log dir.
     let log_dir = match std::env::var("HOME") {
-        Ok(h) => PathBuf::from(h).join(".zosmaai").join("cowork").join("logs"),
+        Ok(h) => PathBuf::from(h)
+            .join(".zosmaai")
+            .join("cowork")
+            .join("logs"),
         Err(_) => return Ok(vec![]),
     };
 
@@ -310,7 +321,12 @@ pub fn get_app_logs(lines: Option<usize>) -> Result<Vec<String>, String> {
         .ok()
         .into_iter()
         .flat_map(|d| d.filter_map(|e| e.ok()))
-        .filter(|e| e.path().extension().map(|ext| ext == "log").unwrap_or(false))
+        .filter(|e| {
+            e.path()
+                .extension()
+                .map(|ext| ext == "log")
+                .unwrap_or(false)
+        })
         .map(|e| e.path())
         .collect();
 
@@ -326,7 +342,8 @@ pub fn get_app_logs(lines: Option<usize>) -> Result<Vec<String>, String> {
         None => return Ok(vec!["No log files found.".to_string()]),
     };
 
-    let content = std::fs::read_to_string(log_file).map_err(|e| format!("Failed to read logs: {e}"))?;
+    let content =
+        std::fs::read_to_string(log_file).map_err(|e| format!("Failed to read logs: {e}"))?;
     let anonymized = content
         .lines()
         .rev()
@@ -442,5 +459,3 @@ pub async fn spawn_flush_task(app: tauri::AppHandle, mut rx: mpsc::Receiver<()>)
         }
     }
 }
-
-
