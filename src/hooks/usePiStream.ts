@@ -10,6 +10,7 @@ import type {
 } from "@/types/pi-events";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { useCallback, useReducer, useRef } from "react";
+import { trackMessageSent, trackStreamComplete, trackStreamError } from "@/lib/telemetry";
 
 export interface StreamState {
 	messages: ChatMessage[];
@@ -283,6 +284,13 @@ export function usePiStream() {
 	const startStream = useCallback(async (prompt: string, sessionId?: string) => {
 		dispatch({ type: "START_STREAM", prompt });
 
+		// Track message sent
+		try {
+			void trackMessageSent();
+		} catch {
+			// Non-fatal
+		}
+
 		// Lazily create a session if one isn't provided.
 		let sid = sessionId;
 		if (!sid) {
@@ -418,11 +426,31 @@ export function usePiStream() {
 
 					case "agent_end": {
 						dispatch({ type: "STREAM_COMPLETE" });
+						try {
+							const msg = streamingRef.current;
+							void trackStreamComplete({
+								model: msg?.model || null,
+								provider: msg?.provider || null,
+								toolCalls: msg?.toolCalls?.length || 0,
+							});
+						} catch {
+							// Non-fatal
+						}
 						break;
 					}
 
 					case "done":
 						dispatch({ type: "STREAM_COMPLETE" });
+						try {
+							const msg = streamingRef.current;
+							void trackStreamComplete({
+								model: msg?.model || null,
+								provider: msg?.provider || null,
+								toolCalls: msg?.toolCalls?.length || 0,
+							});
+						} catch {
+							// Non-fatal
+						}
 						break;
 
 					case "error": {
@@ -439,6 +467,15 @@ export function usePiStream() {
 								retryable: errEvent.retryable ?? false,
 							},
 						});
+						try {
+							void trackStreamError({
+								code: errEvent.code || null,
+								provider: errEvent.provider || null,
+								model: errEvent.model || null,
+							});
+						} catch {
+							// Non-fatal
+						}
 						break;
 					}
 
@@ -463,6 +500,11 @@ export function usePiStream() {
 				type: "STREAM_ERROR",
 				error: err instanceof Error ? err.message : String(err),
 			});
+			try {
+				void trackStreamError({ code: "invoke_error" });
+			} catch {
+				// Non-fatal
+			}
 		}
 	}, []);
 

@@ -17,6 +17,8 @@ use metaagents::events::{categorize_engine_error, CoworkErrorPayload, CoworkEven
 use metaagents::extensions::ExtensionInfo;
 use serde::{Deserialize, Serialize};
 
+mod telemetry;
+
 // ---------------------------------------------------------------------------
 // Types shared with the frontend
 // ---------------------------------------------------------------------------
@@ -65,6 +67,8 @@ struct ConfigPayload {
 struct AppState {
     engine: Arc<MetaAgentsEngine>,
     config: Arc<std::sync::RwLock<ConfigSnapshot>>,
+    #[allow(dead_code)] // accessed via Tauri state mechanism
+    telemetry_queue: telemetry::TelemetryQueue,
 }
 
 // ---------------------------------------------------------------------------
@@ -399,12 +403,19 @@ pub fn run() {
     let engine = Arc::new(MetaAgentsEngine::new());
     let config = Arc::new(std::sync::RwLock::new(config::load_config()));
 
+    // Telemetry: event queue + background flush task
+    let (telemetry_queue, flush_rx) = telemetry::TelemetryQueue::new();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
-        .manage(AppState { engine, config })
-        .setup(|app| {
+        .manage(AppState {
+            engine,
+            config,
+            telemetry_queue,
+        })
+        .setup(move |app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -412,6 +423,11 @@ pub fn run() {
                         .build(),
                 )?;
             }
+
+            // Spawn background telemetry flush task
+            let app_handle = app.handle().clone();
+            tokio::spawn(telemetry::spawn_flush_task(app_handle, flush_rx));
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -441,6 +457,15 @@ pub fn run() {
             install_pi,
             // Diagnostics
             engine_banner,
+            // Telemetry
+            telemetry::telemetry_enabled,
+            telemetry::telemetry_device_id,
+            telemetry::telemetry_set_enabled,
+            telemetry::telemetry_reset_device_id,
+            telemetry::send_telemetry_event,
+            telemetry::flush_telemetry,
+            telemetry::report_crash,
+            telemetry::get_app_logs,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

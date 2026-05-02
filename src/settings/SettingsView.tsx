@@ -1,9 +1,12 @@
+import { BugReportDialog } from "@/components/BugReportDialog";
 import { useExtensions } from "@/hooks/useExtensions";
 import { usePiStatus } from "@/hooks/usePiStatus";
 import { useProviders } from "@/hooks/useProviders";
+import { getDeviceId, isEnabled as telemetryEnabled, setEnabled as setTelemetryEnabled, trackSettingsChanged } from "@/lib/telemetry";
 import type { ExtensionInfo, ModelInfo, ProviderInfo } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import {
+	Bug,
 	ChevronRight,
 	Cpu,
 	FolderOpen,
@@ -16,7 +19,7 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 
 // ============================================================================
 // Provider configuration types
@@ -368,6 +371,24 @@ export function SettingsView() {
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const [saveSuccess, setSaveSuccess] = useState(false);
 
+	// Telemetry state
+	const [telemetryOn, setTelemetryOn] = useState<boolean | null>(null);
+	const [deviceId, setDeviceId] = useState<string | null>(null);
+	const [showBugReport, setShowBugReport] = useState(false);
+
+	// Load telemetry settings
+	useEffect(() => {
+		(async () => {
+			try {
+				const [enabled, id] = await Promise.all([telemetryEnabled(), getDeviceId()]);
+				setTelemetryOn(enabled);
+				setDeviceId(id);
+			} catch {
+				setTelemetryOn(false);
+			}
+		})();
+	}, []);
+
 	// Load editable providers from backend
 	const loadEditableProviders = useCallback(async () => {
 		try {
@@ -472,7 +493,8 @@ export function SettingsView() {
 	};
 
 	return (
-		<div className="flex-1 overflow-y-auto p-8">
+		<Fragment>
+			<div className="flex-1 overflow-y-auto p-8">
 			<div className="max-w-lg mx-auto space-y-8">
 				<div className="flex items-center gap-3">
 					<div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
@@ -688,11 +710,67 @@ export function SettingsView() {
 					)}
 				</div>
 
+				{/* Telemetry Section */}
+				<div className="space-y-3">
+					<div className="flex items-center gap-2">
+						<Monitor className="w-4 h-4 text-muted-foreground" />
+						<h2 className="text-sm font-semibold text-foreground">Telemetry</h2>
+					</div>
+					<div className="rounded-xl border bg-card p-4 space-y-3">
+						<p className="text-xs text-muted-foreground">
+							Help improve Zosma Cowork by sharing anonymous usage data. No PII, prompts, or file paths are ever collected.
+						</p>
+
+						{/* Toggle */}
+						<div className="flex items-center justify-between">
+							<div>
+								<span className="text-sm font-medium text-foreground">Enable Telemetry</span>
+								{telemetryOn !== null && (
+									<p className="text-[10px] text-muted-foreground mt-0.5">
+										Device ID: <code className="font-mono">{deviceId || "unknown"}</code>
+									</p>
+								)}
+							</div>
+							<button
+								type="button"
+								role="switch"
+								aria-checked={telemetryOn || false}
+								onClick={async () => {
+									const newVal = telemetryOn === null ? true : !telemetryOn;
+									setTelemetryOn(newVal);
+									await setTelemetryEnabled(newVal);
+									await trackSettingsChanged("telemetry_enabled", { enabled: newVal });
+								}}
+								className={`relative w-10 h-6 rounded-full transition-colors ${
+									telemetryOn ? "bg-primary" : "bg-muted"
+								}`}
+							>
+								<span
+									className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-background shadow transition-transform ${
+										telemetryOn ? "translate-x-4" : "translate-x-0"
+									}`}
+								/>
+							</button>
+						</div>
+
+						{/* Bug Report */}
+						<button
+							type="button"
+							onClick={() => setShowBugReport(true)}
+							className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium text-foreground hover:bg-muted transition-colors w-full"
+							style={{ borderColor: "hsl(var(--border))" }}
+						>
+								<Bug className="w-3.5 h-3.5 text-destructive" />
+								Report a Bug
+						</button>
+					</div>
+				</div>
+
 				{/* General Section */}
 				<div className="space-y-4">
 					<div className="flex items-center gap-2">
-						<Monitor className="w-4 h-4 text-muted-foreground" />
-						<h2 className="text-sm font-semibold text-foreground">General</h2>
+						<Info className="w-4 h-4 text-muted-foreground" />
+						<h2 className="text-sm font-semibold text-foreground">About</h2>
 					</div>
 					<div className="rounded-xl border bg-card p-4">
 						<div className="flex items-center gap-3 mb-3">
@@ -700,36 +778,32 @@ export function SettingsView() {
 							<h3 className="text-sm font-medium text-foreground">Home Directory</h3>
 						</div>
 						<p className="text-xs text-muted-foreground font-mono bg-muted rounded-lg px-3 py-2">
-							~/zosma-cowork
+							~/.zosmaai/cowork
 						</p>
 					</div>
 
-					<div className="rounded-xl border bg-card p-4">
-						<div className="flex items-center gap-3 mb-3">
-							<Info className="w-5 h-5 text-muted-foreground" />
-							<h3 className="text-sm font-medium text-foreground">About</h3>
+					<div className="rounded-xl border bg-card p-4 space-y-2 text-sm text-muted-foreground">
+						<div className="flex justify-between">
+							<span>Version</span>
+							<span className="text-foreground">0.2.0</span>
 						</div>
-						<div className="space-y-2 text-sm text-muted-foreground">
-							<div className="flex justify-between">
-								<span>Version</span>
-								<span className="text-foreground">0.2.0</span>
-							</div>
-							<div className="flex justify-between">
-								<span>Agent Status</span>
-								<span className="text-foreground">
-									{status?.installed ? "Installed" : "Not installed"}
-								</span>
-							</div>
-							{status?.version && (
-								<div className="flex justify-between">
-									<span>Agent Version</span>
-									<span className="text-foreground">{status.version}</span>
-								</div>
-							)}
+						<div className="flex justify-between">
+							<span>Agent Status</span>
+							<span className="text-foreground">
+								{status?.installed ? "Installed" : "Not installed"}
+							</span>
 						</div>
+						{status?.version && (
+							<div className="flex justify-between">
+								<span>Agent Version</span>
+								<span className="text-foreground">{status.version}</span>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
 		</div>
+		<BugReportDialog open={showBugReport} onClose={() => setShowBugReport(false)} />
+		</Fragment>
 	);
 }
