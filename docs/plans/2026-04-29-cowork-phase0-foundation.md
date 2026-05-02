@@ -2,7 +2,7 @@
 
 > **REQUIRED SUB-SKILL:** Use the executing-plans skill to implement this plan task-by-task.
 
-**Goal:** Fix the chat stream race condition, establish the `~/pi-cowork/` home directory, build the three-column layout with session history sidebar, and stub out Tasks/Settings views for the Cowork MVP.
+**Goal:** Fix the chat stream race condition, establish the `~/.zosmaai/cowork/` home directory, build the three-column layout with session history sidebar, and stub out Tasks/Settings views for the Cowork MVP.
 
 **Architecture:** Rewrite `usePiStream` with `useReducer` to eliminate the blank-screen race condition. Use `@tauri-apps/plugin-fs` for session file CRUD (list, read, write, delete) - zero Rust code needed, hot-reload compatible. Frontend `session-store.ts` wraps the plugin calls. Tests mock the plugin. Restructure App.tsx into a clean three-column layout (sidebar | main | right panel) with icon-only navigation. Each session is a fresh `pi --mode json` invocation; events are captured and persisted to disk.
 
@@ -24,7 +24,7 @@ npm install @tauri-apps/plugin-fs
 - Create: `src/lib/session-store.test.ts`
 - Modify: `src-tauri/capabilities/default.json` (add FS permissions)
 
-**Context:** Uses `@tauri-apps/plugin-fs` for file I/O (`readTextFile`, `writeTextFile`, `readDir`, `mkdir`, `remove`, `exists`). Zero Rust code. Hot-reload compatible. Tests mock the plugin. Session JSONL files live in `~/pi-cowork/sessions/`.
+**Context:** Uses `@tauri-apps/plugin-fs` for file I/O (`readTextFile`, `writeTextFile`, `readDir`, `mkdir`, `remove`, `exists`). Zero Rust code. Hot-reload compatible. Tests mock the plugin. Session JSONL files live in `~/.zosmaai/cowork/sessions/`.
 
 **Schemas:**
 ```typescript
@@ -88,7 +88,7 @@ export interface SessionData {
 
 async function sessionDir(): Promise<string> {
   const home = await homeDir();
-  return join(home, "pi-cowork", "sessions");
+  return join(home, ".zosmaai", "cowork", "sessions");
 }
 
 function extractTitle(lines: string[]): string {
@@ -258,7 +258,7 @@ Add to `src-tauri/capabilities/default.json`:
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default capabilities for Pi Cowork",
+  "description": "Default capabilities for Zosma Cowork",
   "windows": ["main"],
   "permissions": [
     "core:default",
@@ -274,12 +274,12 @@ Add to `src-tauri/capabilities/default.json`:
       }]
     },
     "fs:default",
-    { "identifier": "fs:allow-read-text-file", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
-    { "identifier": "fs:allow-write-text-file", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
-    { "identifier": "fs:allow-read-dir", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
-    { "identifier": "fs:allow-mkdir", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
-    { "identifier": "fs:allow-remove", "allow": [{ "path": "$HOME/pi-cowork/**" }] },
-    { "identifier": "fs:allow-exists", "allow": [{ "path": "$HOME/pi-cowork/**" }] }
+    { "identifier": "fs:allow-read-text-file", "allow": [{ "path": "$HOME/.zosmaai/cowork/**" }] },
+    { "identifier": "fs:allow-write-text-file", "allow": [{ "path": "$HOME/.zosmaai/cowork/**" }] },
+    { "identifier": "fs:allow-read-dir", "allow": [{ "path": "$HOME/.zosmaai/cowork/**" }] },
+    { "identifier": "fs:allow-mkdir", "allow": [{ "path": "$HOME/.zosmaai/cowork/**" }] },
+    { "identifier": "fs:allow-remove", "allow": [{ "path": "$HOME/.zosmaai/cowork/**" }] },
+    { "identifier": "fs:allow-exists", "allow": [{ "path": "$HOME/.zosmaai/cowork/**" }] }
   ]
 }
 ```

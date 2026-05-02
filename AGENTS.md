@@ -1,6 +1,6 @@
-# Pi Cowork — Agent Engineering Standards
+# Zosma Cowork — Agent Engineering Standards
 
-> **Purpose:** This document governs all development work on `pi-cowork`. Every agent must read and follow these standards before writing code.
+> **Purpose:** This document governs all development work on `zosma-cowork`. Every agent must read and follow these standards before writing code.
 
 ---
 

@@ -1,14 +1,14 @@
-# Pi Cowork
+# Zosma Cowork
 
 [English](./README.md) | [中文](./README.zh.md) | [Español](./README.es.md) | [日本語](./README.ja.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md) | **Português** | [Русский](./README.ru.md) | [한국어](./README.ko.md) | [हिंदी](./README.hi.md)
 
-[![CI](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml)
-[![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
+[![CI](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml)
+[![Release](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Um coworker de IA para desktop powered by [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) — streaming, processos de pensamento, chamadas de ferramentas, sessões multi-turno e direcionamento, tudo em um belo aplicativo nativo.
 
-![pi-cowork-captura](./assets/screenshot.png)
+![zosma-cowork-captura](./assets/screenshot.png)
 
 ## Funcionalidades
 
@@ -61,7 +61,7 @@ npm run dev
 | Provedores LLM e chaves API | `~/.zosmaai/agent/settings.json` | Gerenciado pelo app |
 | Definições de modelos | `~/.zosmaai/agent/models.json` | Gerenciado pelo app |
 | Extensões e habilidades | `~/.zosmaai/agent/extensions/` | Diretório local de extensões |
-| Histórico de sessões | `~/.zosmaai/cowork/` | Gerenciado por pi-cowork |
+| Histórico de sessões | `~/.zosmaai/cowork/` | Gerenciado por Zosma Cowork |
 
 ## Licença
 

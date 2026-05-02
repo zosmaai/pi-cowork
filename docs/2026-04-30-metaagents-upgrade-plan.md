@@ -1,10 +1,10 @@
-# MetaAgents Upgrade Plan — pi-cowork → Zosma Cowork
+# MetaAgents Upgrade Plan — zosma-cowork
 
 **Date:** 2026-04-30
-**Status:** Draft v1
+**Status:** Complete (v0.2.0)
 **Companion to:** [`metaagents/docs/plans/2026-04-30-metaagents-vision-phase1.md`](../../metaagents/docs/plans/2026-04-30-metaagents-vision-phase1.md)
 
-> **Goal:** Upgrade the existing `pi-cowork` project to match the MetaAgents vision — replacing the `pi --mode json` subprocess with the in-process `pi_agent_rust` SDK, introducing a clean `metaagents` engine layer, and preparing the codebase for the Zosma Cowork product line.
+> **Goal:** Upgrade the existing `pi-cowork` (now `zosma-cowork`) project to match the MetaAgents vision — replacing the `pi --mode json` subprocess with the in-process `pi_agent_rust` SDK, introducing a clean `metaagents` engine layer, and preparing the codebase for the Zosma Cowork product line.
 >
 > **Constraint:** App must remain functional at every step. No long broken-state periods.
 
@@ -41,7 +41,7 @@
 ## 2. Target Architecture (Post-Upgrade)
 
 ```
-pi-cowork/                                # repo (rename later)
+zosma-cowork/                             # repo root
 ├── metaagents/                           # 🆕 Rust engine library
 │   ├── Cargo.toml                        # depends on pi_agent_rust
 │   └── src/
@@ -395,14 +395,15 @@ When a new session is created in the GUI, call `invoke("create_session", { sessi
 | F.2 | Add architecture doc: `docs/architecture/metaagents-engine.md` |
 | F.3 | Bump version to `0.2.0` (since it's a real backend rewrite) |
 | F.4 | Migrate sessions storage location (optional): if moving `~/.pi/cowork/` → `~/.metaagents/`, write a one-time migration on app start |
-| F.5 | Update `package.json` `name` field to `metaagents-cowork` (or keep `pi-cowork` until rename) |
-| F.6 | Update all internal imports/path references that say "pi-cowork" |
-| F.7 | Tag release `v0.2.0` and verify CI builds artifacts on all 3 platforms |
+| F.5 | Update `package.json` `name` field to `metaagents-cowork` | ✅ |
+| F.6 | Update all internal imports/path references that say "pi-cowork" | ✅ |
+| F.7 | Tag release `v0.2.0` and verify CI builds artifacts on all 3 platforms | ✅ |
+| F.8 | Rename repo from `zosmaai/pi-cowork` → `zosmaai/zosma-cowork` | ⬅️ This task |
 
 **Repo rename (do at end):**
-- GitHub repo: `zosmaai/pi-cowork` → `zosmaai/metaagents`
-- Add Zosma Cowork as the desktop product name in README/UI ("Zosma Cowork" is the product, "metaagents" is the engine)
-- Update all docs/links
+- GitHub repo: `zosmaai/pi-cowork` → `zosmaai/zosma-cowork` (rename complete)
+- Product name: Zosma Cowork
+- Engine name: metaagents
 
 ---
 
@@ -565,7 +566,7 @@ After the upgrade, users will notice:
 | Model switching | ❌ edit JSON config | ✅ dropdown in UI |
 | Process count | 1 + N child pi processes | 1 only |
 
-**This is the upgrade that makes pi-cowork worth recommending over the pi CLI for non-developers.**
+**This is the upgrade that makes Zosma Cowork worth recommending over the pi CLI for non-developers.**
 
 ---
 

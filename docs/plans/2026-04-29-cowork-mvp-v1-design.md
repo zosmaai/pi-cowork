@@ -9,8 +9,8 @@
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Home directory | `~/pi-cowork/` | User's request. Keeps cowork data separate from pi's `~/.pi/agent/`. |
-| Session storage | `~/pi-cowork/sessions/*.jsonl` | Cowork-owned. Same JSONL format as pi sessions. Flat list, no per-CWD subdirs for MVP. |
+| Home directory | `~/.zosmaai/cowork/` | Keeps cowork data separate from pi's `~/.pi/agent/`. |
+| Session storage | `~/.zosmaai/cowork/sessions/*.jsonl` | Cowork-owned. Same JSONL format as pi sessions. Flat list, no per-CWD subdirs for MVP. |
 | Welcome screen | Smart summary + suggestions | Recent sessions + static action buttons for MVP. AI-personalized suggestions in later phase. |
 | Navigation | Icon-only sidebar | 3 icons at bottom of session sidebar: 💬 Chat, ✓ Tasks, ⚙️ Settings |
 | Right panel | Minimal, collapsible | Closed by default. Toggled via shortcut (`CMD+B` or `CMD+.`). Auto-shows during tool calls. |
@@ -81,7 +81,7 @@ src/
 ├── hooks/
 │   ├── usePiStream.ts                # useReducer-based (no races)
 │   ├── usePiStatus.ts                # Pi installation check
-│   └── useSessions.ts                # Read/write ~/pi-cowork/sessions/
+│   └── useSessions.ts                # Read/write ~/.zosmaai/cowork/sessions/
 │
 ├── lib/
 │   ├── session-store.ts              # JSONL file CRUD

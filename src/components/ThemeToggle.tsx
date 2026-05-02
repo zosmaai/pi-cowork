@@ -42,7 +42,7 @@ function applyTheme(theme: ThemeName) {
 
 	// Store preference
 	try {
-		localStorage.setItem("pi-cowork-theme", theme);
+		localStorage.setItem("zosma-cowork-theme", theme);
 	} catch {
 		// localStorage not available
 	}
@@ -50,7 +50,7 @@ function applyTheme(theme: ThemeName) {
 
 function getStoredTheme(): ThemeName {
 	try {
-		const stored = localStorage.getItem("pi-cowork-theme");
+		const stored = localStorage.getItem("zosma-cowork-theme");
 		if (stored && THEMES.includes(stored as ThemeName)) {
 			return stored as ThemeName;
 		}

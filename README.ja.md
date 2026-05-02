@@ -1,14 +1,14 @@
-# Pi Cowork
+# Zosma Cowork
 
 [English](./README.md) | [中文](./README.zh.md) | [Español](./README.es.md) | **日本語** | [Deutsch](./README.de.md) | [Français](./README.fr.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [한국어](./README.ko.md) | [हिंदी](./README.hi.md)
 
-[![CI](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml)
-[![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
+[![CI](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml)
+[![Release](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) を搭載したデスクトップ AI コワーカー — ストリーミング、思考プロセス、ツール呼び出し、マルチターンセッション、ステアリングをすべて美しいネイティブアプリに統合。
 
-![pi-cowork-スクリーンショット](./assets/screenshot.png)
+![zosma-cowork-スクリーンショット](./assets/screenshot.png)
 
 ## 機能
 
@@ -61,7 +61,7 @@ npm run dev
 | LLM プロバイダーと API キー | `~/.zosmaai/agent/settings.json` | アプリが管理 |
 | モデル定義 | `~/.zosmaai/agent/models.json` | アプリが管理 |
 | 拡張機能とスキル | `~/.zosmaai/agent/extensions/` | ローカル拡張ディレクトリ |
-| セッション履歴 | `~/.zosmaai/cowork/` | pi-cowork が管理 |
+| セッション履歴 | `~/.zosmaai/cowork/` | Zosma Cowork が管理 |
 
 ## ライセンス
 
