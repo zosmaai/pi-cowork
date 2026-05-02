@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - "*.*.*"
 
 permissions:
   contents: write
@@ -60,8 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "Pi Cowork ${{ github.ref_name }}"
-          releaseBody: "See the assets to download this version and install."
+          releaseName: "Zosma Cowork ${{ github.ref_name }}"
+          releaseBody: "Download the latest Zosma Cowork release."
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
