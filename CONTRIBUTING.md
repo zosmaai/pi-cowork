@@ -1,4 +1,4 @@
-# Contributing to Pi Cowork
+# Contributing to Zosma Cowork
 
 Thank you for your interest in contributing! This document will help you get started.
 
@@ -19,8 +19,8 @@ sudo apt-get install libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev \
 ### Clone & Install
 
 ```bash
-git clone https://github.com/zosmaai/pi-cowork.git
-cd pi-cowork
+git clone https://github.com/zosmaai/zosma-cowork.git
+cd zosma-cowork
 npm install
 ```
 
@@ -37,7 +37,7 @@ npm run dev
 ## Project Structure
 
 ```
-pi-cowork/
+zosma-cowork/
 ├── Cargo.toml          # Cargo workspace root (Phase A)
 ├── metaagents/         # MetaAgents engine — Rust SDK wrapper (Phase A–B)
 ├── src/                # React frontend (TypeScript + Tailwind)
@@ -57,7 +57,7 @@ and phase-by-phase migration plan.
 4. **Test**: `npm run validate` (lint + typecheck + test)
 5. **Commit**: Follow [Conventional Commits](https://www.conventionalcommits.org/)
 6. **Push**: `git push fork feature/my-feature`
-7. **PR**: Open a pull request to `zosmaai/pi-cowork:main`
+7. **PR**: Open a pull request to `zosmaai/zosma-cowork:main`
 
 ## Commit Message Convention
 

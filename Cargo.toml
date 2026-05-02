@@ -19,7 +19,7 @@ edition = "2021"
 # transitive deps.
 rust-version = "1.85"
 license = "MIT"
-repository = "https://github.com/zosmaai/pi-cowork"
+repository = "https://github.com/zosmaai/zosma-cowork"
 
 [workspace.dependencies]
 # Shared deps used by both crates. Pin versions here so all members agree.

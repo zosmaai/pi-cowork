@@ -1,14 +1,14 @@
-# Pi Cowork
+# Zosma Cowork
 
 [English](./README.md) | **中文** | [Español](./README.es.md) | [日本語](./README.ja.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [한국어](./README.ko.md) | [हिंदी](./README.hi.md)
 
-[![CI](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml)
-[![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
+[![CI](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml)
+[![Release](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > 由 [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) 驱动的桌面 AI 协作者 — 流式传输、思维过程、工具调用、多轮会话和引导，全部集成在一个精美的原生应用中。
 
-![pi-cowork-截图](./assets/screenshot.png)
+![zosma-cowork-截图](./assets/screenshot.png)
 
 ## 功能特性
 
@@ -61,7 +61,7 @@ npm run dev
 | LLM 提供商和 API 密钥 | `~/.zosmaai/agent/settings.json` | 由应用管理 |
 | 模型定义 | `~/.zosmaai/agent/models.json` | 由应用管理 |
 | 扩展和技能 | `~/.zosmaai/agent/extensions/` | 本地扩展目录 |
-| 会话历史 | `~/.zosmaai/cowork/` | 由 pi-cowork 管理 |
+| 会话历史 | `~/.zosmaai/cowork/` | 由 Zosma Cowork 管理 |
 
 ## 许可证
 

@@ -2,17 +2,18 @@
 
 **English** | [中文](./README.zh.md) | [Español](./README.es.md) | [日本語](./README.ja.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [한국어](./README.ko.md) | [हिंदी](./README.hi.md)
 
-[![CI](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml)
-[![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
+[![CI](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml)
+[![Release](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> A desktop AI coworker powered by the [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) — streaming, thinking, tool calls, multi-turn sessions, and steering, all in a beautiful native app.
+> A desktop AI coworker **built on top of the [Rust pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust)** — streaming, thinking, tool calls, multi-turn sessions, and steering, all in a beautiful native app. The `pi_agent_rust` SDK runs in-process for zero-latency agent sessions with no CLI dependency.
 
-![pi-cowork-screenshot](./assets/screenshot.png)
+![Zosma Cowork screenshot](./assets/screenshot.png)
 
 ## Features
 
-- **In-process agent runtime** — The pi agent SDK runs directly inside the app (no subprocess, no CLI dependency at runtime)
+- **In-process Rust agent runtime** — The `pi_agent_rust` SDK runs directly inside the app (no subprocess, no CLI dependency at runtime)
+- **Built on the Rust pi coding agent** — Leverages the full pi ecosystem: QuickJS extensions, multi-provider support, tool execution, all running in a single native process
 - **Multi-turn sessions** — Full conversation continuity with persistent session history
 - **Streaming responses** — See the agent think, write, and call tools in real-time
 - **Thinking blocks** — Expandable reasoning from the model
@@ -41,7 +42,7 @@
 │  │  • Config reader — reads ~/.pi/agent/ settings       ││
 │  │  • Extension discovery — scans installed packages     ││
 │  └────────────┬─────────────────────────────────────────┘│
-│               │ pi_agent_rust SDK                         │
+│               │ pi_agent_rust SDK (Rust pi coding agent) │
 │               │ (QuickJS extensions, providers, tools)    │
 │               ▼                                           │
 │        LLM Providers (OpenAI, Anthropic, ...)            │
@@ -55,7 +56,7 @@
 | Frontend | React 19, Tailwind CSS v4, Radix UI |
 | Desktop Shell | Tauri v2, Rust, Tokio |
 | Agent Engine | [metaagents](./metaagents/) — Rust wrapper around `pi_agent_rust` SDK |
-| Agent SDK | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — in-process runtime with QuickJS extensions |
+| Agent SDK | [`pi_agent_rust`](https://github.com/Dicklesworthstone/pi_agent_rust) — The **Rust pi coding agent**, an in-process agent harness with QuickJS extensions |
 | Testing | Vitest, Testing Library, jsdom, `cargo test` |
 | Linting | Biome (frontend), Clippy (Rust) |
 
@@ -104,7 +105,7 @@ cargo clippy --workspace  # Lint Rust code
 | LLM providers & API keys | `~/.zosmaai/agent/settings.json` | Managed by the app |
 | Model definitions | `~/.zosmaai/agent/models.json` | Managed by the app |
 | Extensions & skills | `~/.zosmaai/agent/extensions/` | Local extensions directory |
-| Session history | `~/.zosmaai/cowork/` | Managed by pi-cowork |
+| Session history | `~/.zosmaai/cowork/` | Managed by Zosma Cowork |
 
 ## Event Streaming
 
@@ -124,7 +125,7 @@ The metaagents engine translates SDK `AgentEvent`s into typed `CoworkEvent`s, se
 ## Project Structure
 
 ```
-pi-cowork/
+zosma-cowork/
 ├── metaagents/                   # Agent engine (Rust library)
 │   └── src/
 │       ├── lib.rs                # Public API + re-exports

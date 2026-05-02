@@ -161,7 +161,7 @@ export function SettingsView() {
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold text-foreground">Settings</h1>
-						<p className="text-sm text-muted-foreground">Configure Pi Cowork</p>
+						<p className="text-sm text-muted-foreground">Configure Zosma Cowork</p>
 					</div>
 				</div>
 
@@ -199,7 +199,7 @@ export function SettingsView() {
 							<h3 className="text-sm font-medium text-foreground">Home Directory</h3>
 						</div>
 						<p className="text-xs text-muted-foreground font-mono bg-muted rounded-lg px-3 py-2">
-							~/pi-cowork
+							~/.zosmaai/cowork
 						</p>
 					</div>
 

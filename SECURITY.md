@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Pi Cowork, please report it responsibly.
+If you discover a security vulnerability in Zosma Cowork, please report it responsibly.
 
 **Please do NOT open a public GitHub issue for security bugs.**
 
@@ -29,4 +29,4 @@ Our CI runs automated security scans on every push:
 - **cargo audit** — checks Rust dependencies for known vulnerabilities
 - **CodeQL** — static analysis for TypeScript and Rust
 
-You can view the latest scan results in the [Security tab](https://github.com/zosmaai/pi-cowork/security).
+You can view the latest scan results in the [Security tab](https://github.com/zosmaai/zosma-cowork/security).

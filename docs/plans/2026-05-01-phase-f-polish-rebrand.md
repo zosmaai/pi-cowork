@@ -18,11 +18,11 @@ Phase F wraps up the MetaAgents upgrade (Phases A–E) by bumping versions, addi
 - **`docs/architecture/metaagents-engine.md`** (new) — detailed module breakdown, event flow diagram, design decisions, and testing guide
 
 ### Version Bump: 0.1.0 → 0.2.0
-- `package.json` — version + name (`pi-cowork` → `metaagents-cowork`)
-- `src-tauri/tauri.conf.json` — version + productName (`Pi Cowork` → `Zosma Cowork`) + identifier
+- `package.json` — version + name (`metaagents-cowork`)
+- `src-tauri/tauri.conf.json` — version + productName (`Zosma Cowork`) + identifier
 - `src-tauri/Cargo.toml` — version + package name + description
 
-### Rebranding: Pi Cowork → Zosma Cowork
+### Rebranding: Zosma Cowork
 - WelcomeScreen — heading + install prompt
 - Sidebar — app name label
 - SettingsView — subtitle + version string
@@ -36,7 +36,7 @@ Phase F wraps up the MetaAgents upgrade (Phases A–E) by bumping versions, addi
 - `Cargo.toml` (workspace) — updated workspace comment
 
 ### Deferred (F.4 — Storage Migration)
-- `~/pi-cowork/sessions` → moving to `~/.metaagents/` is optional; deferred to a future migration
+- Session storage is at `~/.zosmaai/cowork/` (migrated)
 
 ---
 
@@ -53,5 +53,5 @@ Phase F wraps up the MetaAgents upgrade (Phases A–E) by bumping versions, addi
 
 1. Merge `feat/phase-f-polish-rebrand` → `main`
 2. Tag `v0.2.0` and verify CI builds on all 3 platforms
-3. Repo rename: `zosmaai/pi-cowork` → `zosmaai/metaagents` (final step)
+3. Repo rename: `zosmaai/pi-cowork` → `zosmaai/zosma-cowork` (final step)
 4. Post-upgrade: Cowork Apps (Phase 2), task scheduling UI, app registry

@@ -1,4 +1,4 @@
-# Pi Cowork v1 MVP — Roadmap & Architecture
+# Zosma Cowork v1 MVP — Roadmap & Architecture
 
 > **Status:** Draft v1 | **Target:** Launch-quality desktop app for founders & solo devs
 >
@@ -57,7 +57,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                   Pi Cowork Desktop                  │
+│               Zosma Cowork Desktop                   │
 │  ┌──────────┐ ┌────────────────────┐ ┌────────────┐ │
 │  │  Sidebar  │ │    Main Content    │ │ Right Panel│ │
 │  │  (nav,   │ │  ┌──────────────┐  │ │ (context,  │ │
@@ -115,7 +115,7 @@ Pi extensions are powerful but:
 - Users edit JSON files to configure them
 - Each extension uses different patterns
 
-### Solution: Pi Cowork Apps
+### Solution: Cowork Apps
 
 A **cowork app** is a pi package (npm/git) with an additional `cowork` manifest:
 
@@ -212,7 +212,7 @@ Each app shows in a dashboard with:
 | 1.7 | System tray | Minimize to tray, click to open, notification when pi finishes a task |
 
 ### Phase 2: Tasks & Scheduling (Week 5-6)
-**Goal:** Make pi-cowork your daily operations hub.
+**Goal:** Make Zosma Cowork your daily operations hub.
 
 | # | Task | Details |
 |---|------|---------|
@@ -223,7 +223,7 @@ Each app shows in a dashboard with:
 | 2.5 | Dashboard widget | Home screen shows next scheduled task, recent completions, quick "What's on today?" button |
 
 ### Phase 3: App Store & Ecosystem (Week 7-8)
-**Goal:** Turn pi-cowork into a platform.
+**Goal:** Turn Zosma Cowork into a platform.
 
 | # | Task | Details |
 |---|------|---------|
@@ -358,20 +358,15 @@ interface CoworkApp {
 
 App registry is stored in `~/.pi/cowork/apps.json` (separate from pi settings to keep things clean).
 
-### Pi Cowork Home Directory
+### Home Directory
 
-I propose: `~/.pi/cowork/` as the dedicated home for all pi-cowork config.
+The app stores data in `~/.zosmaai/cowork/` — separate from `~/.pi/agent/` (pi's own config).
 
 ```
-~/.pi/cowork/
-├── apps.json           # App registry
-├── settings.json       # Cowork-specific settings
-├── sessions/           # Session data (or symlinks to pi sessions)
-├── extensions/         # Cowork-specific extensions installed via apps
-└── logs/               # Cowork logs
+~/.zosmaai/cowork/
+├── sessions/           # Session data (JSONL format)
+└── ...
 ```
-
-This keeps pi-cowork concerns separate from `~/.pi/agent/` (pi's own config).
 
 ---
 
@@ -416,7 +411,7 @@ This keeps pi-cowork concerns separate from `~/.pi/agent/` (pi's own config).
 
 4. **Scheduling: in-process (Rust cron) or rely on pi's schedule tool?** → Both. Cowork's Tauri backend runs the cron, then invokes pi. This keeps scheduling alive even if the frontend is closed. Pi's own `schedule_prompt` is for in-session scheduling.
 
-5. **Monorepo or single package?** → Single package for now. Split into `pi-cowork` (Tauri app) + `create-cowork-app` (scaffolding for app developers) later.
+5. **Monorepo or single package?** → Single package for now. Split into `zosma-cowork` (Tauri app) + `create-cowork-app` (scaffolding for app developers) later.
 
 ---
 

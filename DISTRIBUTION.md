@@ -1,10 +1,10 @@
 # Distribution Guide
 
-This document covers all channels for distributing Pi Cowork.
+This document covers all channels for distributing Zosma Cowork.
 
 ## Current Status
 
-GitHub Releases are fully automated via [`.github/workflows/release.yml`](.github/workflows/release.yml). Pushing a `v*.*.*` tag triggers builds for:
+GitHub Releases are fully automated via [`.github/workflows/release.yml`](.github/workflows/release.yml). Built on top of the [Rust pi coding agent](https://github.com/Dicklesworthstone/pi_agent_rust). Pushing a `v*.*.*` tag triggers builds for:
 
 | Platform | Format | Status |
 |----------|--------|--------|
@@ -23,7 +23,7 @@ npm version patch   # or minor / major
 git push origin --tags
 ```
 
-The release is drafted automatically. Go to the [Releases page](https://github.com/zosmaai/pi-cowork/releases) to publish it.
+The release is drafted automatically. Go to the [Releases page](https://github.com/zosmaai/zosma-cowork/releases) to publish it.
 
 ---
 
@@ -34,47 +34,47 @@ The release is drafted automatically. Go to the [Releases page](https://github.c
 Requires a custom tap (`homebrew-zosmaai`) or submission to `homebrew/cask`.
 
 ```ruby
-# Formula for homebrew-zosmaai/pi-cowork.rb
-cask "pi-cowork" do
-  version "0.1.0"
+# Formula for homebrew-zosmaai/zosma-cowork.rb
+cask "zosma-cowork" do
+  version "0.2.0"
   sha256 "..."
 
-  url "https://github.com/zosmaai/pi-cowork/releases/download/v#{version}/Pi.Cowork_#{version}_aarch64.dmg"
-  name "Pi Cowork"
-  desc "Desktop GUI for the pi coding agent"
-  homepage "https://github.com/zosmaai/pi-cowork"
+  url "https://github.com/zosmaai/zosma-cowork/releases/download/v#{version}/Zosma.Cowork_#{version}_aarch64.dmg"
+  name "Zosma Cowork"
+  desc "Desktop AI coworker powered by the Rust pi coding agent"
+  homepage "https://github.com/zosmaai/zosma-cowork"
 
-  app "Pi Cowork.app"
+  app "Zosma Cowork.app"
 end
 ```
 
-Install: `brew install --cask zosmaai/tap/pi-cowork`
+Install: `brew install --cask zosmaai/tap/zosma-cowork`
 
 ### Windows — Winget
 
 Submit a manifest to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs):
 
 ```yaml
-# PiCowork.PiCowork.yaml
-PackageIdentifier: ZosmaAI.PiCowork
-PackageVersion: 0.1.0
+# ZosmaAI.ZosmaCowork.yaml
+PackageIdentifier: ZosmaAI.ZosmaCowork
+PackageVersion: 0.2.0
 InstallerType: msi
 Installers:
   - Architecture: x64
-    InstallerUrl: https://github.com/zosmaai/pi-cowork/releases/download/v0.1.0/Pi.Cowork_0.1.0_x64_en-US.msi
+    InstallerUrl: https://github.com/zosmaai/zosma-cowork/releases/download/v0.2.0/Zosma.Cowork_0.2.0_x64_en-US.msi
     InstallerSha256: ...
 ManifestType: singleton
 ManifestVersion: 1.0.0
 ```
 
-Install: `winget install ZosmaAI.PiCowork`
+Install: `winget install ZosmaAI.ZosmaCowork`
 
 ### Windows — Chocolatey
 
 Requires a `.nuspec` + PowerShell install script, pushed to [chocolatey.org](https://chocolatey.org):
 
 ```powershell
-# choco install pi-cowork
+# choco install zosma-cowork
 ```
 
 ### Windows — Scoop
@@ -83,13 +83,13 @@ Add to a custom bucket or [Scoop Extras](https://github.com/ScoopInstaller/Extra
 
 ```json
 {
-  "version": "0.1.0",
-  "url": "https://github.com/zosmaai/pi-cowork/releases/download/v0.1.0/Pi.Cowork_0.1.0_x64-setup.exe",
-  "bin": "Pi Cowork.exe"
+  "version": "0.2.0",
+  "url": "https://github.com/zosmaai/zosma-cowork/releases/download/v0.2.0/Zosma.Cowork_0.2.0_x64-setup.exe",
+  "bin": "Zosma Cowork.exe"
 }
 ```
 
-Install: `scoop install pi-cowork`
+Install: `scoop install zosma-cowork`
 
 ### Linux — AUR (Arch)
 
@@ -97,14 +97,14 @@ Create a `PKGBUILD` and submit to AUR:
 
 ```bash
 # PKGBUILD
-pkgname=pi-cowork-bin
-pkgver=0.1.0
+pkgname=zosma-cowork-bin
+pkgver=0.2.0
 pkgrel=1
-pkgdesc="Desktop GUI for the pi coding agent"
+pkgdesc="Desktop AI coworker powered by the Rust pi coding agent"
 arch=('x86_64')
-url="https://github.com/zosmaai/pi-cowork"
+url="https://github.com/zosmaai/zosma-cowork"
 license=('MIT')
-source=("$pkgname-$pkgver.deb::$url/releases/download/v$pkgver/pi-cowork_${pkgver}_amd64.deb")
+source=("$pkgname-$pkgver.deb::$url/releases/download/v$pkgver/zosma-cowork_${pkgver}_amd64.deb")
 sha256sums=('...')
 
 package() {
@@ -112,50 +112,50 @@ package() {
 }
 ```
 
-Install: `yay -S pi-cowork-bin`
+Install: `yay -S zosma-cowork-bin`
 
 ### Linux — Flatpak
 
 Requires a `flatpak-builder` manifest + Flathub submission:
 
 ```yaml
-# ai.zosma.PiCowork.yml
-app-id: ai.zosma.PiCowork
+# ai.zosma.ZosmaCowork.yml
+app-id: ai.zosma.ZosmaCowork
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
-command: pi-cowork
+command: zosma-cowork
 modules:
-  - name: pi-cowork
+  - name: zosma-cowork
     buildsystem: simple
     sources:
       - type: archive
-        url: https://github.com/zosmaai/pi-cowork/releases/download/v0.1.0/pi-cowork-x86_64.tar.gz
+        url: https://github.com/zosmaai/zosma-cowork/releases/download/v0.2.0/zosma-cowork-x86_64.tar.gz
         sha256: ...
 ```
 
-Install: `flatpak install flathub ai.zosma.PiCowork`
+Install: `flatpak install flathub ai.zosma.ZosmaCowork`
 
 ### Linux — Snap
 
 Requires a `snapcraft.yaml` and Snap Store registration:
 
 ```yaml
-name: pi-cowork
-version: '0.1.0'
+name: zosma-cowork
+version: '0.2.0'
 base: core22
 grade: stable
 confinement: strict
 parts:
-  pi-cowork:
+  zosma-cowork:
     plugin: dump
-    source: https://github.com/zosmaai/pi-cowork/releases/download/v0.1.0/pi-cowork_0.1.0_amd64.deb
+    source: https://github.com/zosmaai/zosma-cowork/releases/download/v0.2.0/zosma-cowork_0.2.0_amd64.deb
 apps:
-  pi-cowork:
-    command: usr/bin/pi-cowork
+  zosma-cowork:
+    command: usr/bin/zosma-cowork
 ```
 
-Install: `snap install pi-cowork`
+Install: `snap install zosma-cowork`
 
 ---
 
@@ -180,7 +180,7 @@ Install: `snap install pi-cowork`
 
 ```bash
 npm install -g @crabnebula/cli
-cn release upload --app pi-cowork --version 0.1.0 ./src-tauri/target/release/bundle/
+cn release upload --app zosma-cowork --version 0.2.0 ./src-tauri/target/release/bundle/
 ```
 
 ---

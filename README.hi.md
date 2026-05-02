@@ -1,14 +1,14 @@
-# Pi Cowork
+# Zosma Cowork
 
 [English](./README.md) | [中文](./README.zh.md) | [Español](./README.es.md) | [日本語](./README.ja.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [한국어](./README.ko.md) | **हिंदी**
 
-[![CI](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/ci.yml)
-[![Release](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/pi-cowork/actions/workflows/release.yml)
+[![CI](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/ci.yml)
+[![Release](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml/badge.svg)](https://github.com/zosmaai/zosma-cowork/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > [pi agent SDK](https://github.com/Dicklesworthstone/pi_agent_rust) द्वारा संचालित डेस्कटॉप AI सहकर्मी — स्ट्रीमिंग, सोच की प्रक्रिया, टूल कॉल, मल्टी-टर्न सेशन और स्टीयरिंग, सब कुछ एक सुंदर नेटिव ऐप में।
 
-![pi-cowork-स्क्रीनशॉट](./assets/screenshot.png)
+![zosma-cowork-स्क्रीनशॉट](./assets/screenshot.png)
 
 ## विशेषताएँ
 
@@ -17,7 +17,7 @@
 - **स्ट्रीमिंग प्रतिक्रियाएँ** — एजेंट को सोचते, लिखते और टूल कॉल करते हुए रीयल-टाइम में देखें
 - **थिंकिंग ब्लॉक** — मॉडल का विस्तार योग्य तर्क
 - **टूल कॉल टाइमलाइन** — आर्ग्युमेंट और परिणामों के साथ लाइव bash/edit/write टूल कॉल
-- **सेशन मैनेजमेंट** — `~/.pi/cowork/` में सहेजे गए लगातार चैट सेशन
+- **सेशन मैनेजमेंट** — `~/.zosmaai/cowork/` में सहेजे गए लगातार चैट सेशन
 - **लाइट और डार्क मोड** — गर्म क्रीम लाइट मोड और गर्म चारकोल डार्क मोड
 - **कीबोर्ड शॉर्टकट** — फोकस के लिए `Cmd/Ctrl+Shift+K`, नए सेशन के लिए `Cmd/Ctrl+N`
 - **एबॉर्ट और स्टीयरिंग** — मिड-टर्न में चल रहे एजेंट को रोकें, फॉलो-अप स्टीयरिंग संदेश भेजें
@@ -64,7 +64,7 @@ npm run dev
 | LLM प्रदाता और API कुंजियाँ | `~/.pi/agent/settings.json` | पहले `pi` रन पर बनाया गया |
 | मॉडल परिभाषाएँ | `~/.pi/agent/models.json` | पहले `pi` रन पर बनाया गया |
 | एक्सटेंशन और स्किल | `~/.pi/agent/extensions/` | `pi install` से इंस्टॉल किए गए |
-| सेशन इतिहास | `~/.pi/cowork/` | pi-cowork द्वारा प्रबंधित |
+| सेशन इतिहास | `~/.zosmaai/cowork/` | Zosma Cowork द्वारा प्रबंधित |
 
 ## लाइसेंस
 
