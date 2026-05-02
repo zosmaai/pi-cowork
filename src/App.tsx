@@ -2,6 +2,7 @@ import { ChatView } from "@/chat/ChatView";
 import { HomeView } from "@/components/HomeView";
 import { ProviderSetup } from "@/components/ProviderSetup";
 import { RightPanel } from "@/components/RightPanel";
+import { TelemetryDialog } from "@/components/TelemetryDialog";
 import { AUTH_PROVIDERS, useAuth } from "@/hooks/useAuth";
 import { usePiStatus } from "@/hooks/usePiStatus";
 import { type StreamState, usePiStream } from "@/hooks/usePiStream";
@@ -13,6 +14,7 @@ import {
 	readSession,
 	writeSession,
 } from "@/lib/session-store";
+import { isEnabled as telemetryEnabled, trackAppLaunch, trackSessionCreated } from "@/lib/telemetry";
 import { SettingsView } from "@/settings/SettingsView";
 import { Sidebar } from "@/sidebar/Sidebar";
 import { TasksView } from "@/tasks/TasksView";
@@ -50,6 +52,26 @@ function App() {
 
 	// Provider setup wizard state
 	const [showProviderSetup, setShowProviderSetup] = useState(false);
+
+	// Telemetry: show opt-in dialog on first launch if not configured
+	const [showTelemetryDialog, setShowTelemetryDialog] = useState(false);
+
+	// Check telemetry status on mount and emit app_launch
+	useEffect(() => {
+		(async () => {
+			try {
+				await trackAppLaunch();
+			} catch {
+				// Non-fatal
+			}
+
+			// Show opt-in dialog if telemetry has never been configured (enabled = false by default)
+			const enabled = await telemetryEnabled();
+			if (!enabled) {
+				setShowTelemetryDialog(true);
+			}
+		})();
+	}, []);
 
 	const [activeView, setActiveView] = useState<"chat" | "tasks" | "settings">("chat");
 	const [rightPanelOpen, setRightPanelOpen] = useState(false);
@@ -95,6 +117,20 @@ function App() {
 					.catch((err) => console.error("[cowork] Failed to save session:", err));
 			},
 			[refreshSessions],
+		),
+	);
+
+	// Track when a new session is created (not loading an existing one)
+	const stableTrackSessionCreated = useLatest(
+		useCallback(
+			(sessionId: string) => {
+				try {
+					void trackSessionCreated({ sessionId: sessionId.substring(0, 8) });
+				} catch {
+					// Non-fatal
+				}
+			},
+			[],
 		),
 	);
 
@@ -162,6 +198,7 @@ function App() {
 		const id = crypto.randomUUID();
 		currentSessionIdRef.current = id;
 		createSession(id);
+		stableTrackSessionCreated(id);
 		setChatHistory([]);
 		// Reset active model to the global default for new sessions
 		setActiveModelId(config?.defaultModel ?? undefined);
@@ -222,10 +259,11 @@ function App() {
 				const id = crypto.randomUUID();
 				currentSessionIdRef.current = id;
 				await createSession(id);
+				stableTrackSessionCreated(id);
 			}
 			void startStream(text, currentSessionIdRef.current);
 		},
-		[startStream, createSession],
+		[startStream, createSession, stableTrackSessionCreated],
 	);
 
 	// Listen for 
@@ -407,6 +445,9 @@ function App() {
 			{rightPanelOpen && (
 				<RightPanel streamState={streamState} onClose={() => setRightPanelOpen(false)} />
 			)}
+
+			{/* Telemetry opt-in dialog (shown once on first launch) */}
+			{showTelemetryDialog && <TelemetryDialog onDecided={() => setShowTelemetryDialog(false)} />}
 		</>
 	);
 }

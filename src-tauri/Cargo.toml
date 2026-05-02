@@ -31,3 +31,8 @@ tauri-plugin-log = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-fs = "2"
+
+# Telemetry
+reqwest = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
