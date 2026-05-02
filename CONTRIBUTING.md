@@ -139,7 +139,7 @@ Releases are automated via GitHub Actions:
 
 ## Questions?
 
-- Open a [GitHub Discussion](https://github.com/zosmaai/pi-cowork/discussions)
+- Open a [GitHub Discussion](https://github.com/zosmaai/zosma-cowork/discussions)
 - Or reach out via email: [hello@zosma.ai](mailto:hello@zosma.ai)
 
 ## License
